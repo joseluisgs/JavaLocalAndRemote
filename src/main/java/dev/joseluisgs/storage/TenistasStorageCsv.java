@@ -65,7 +65,7 @@ public class TenistasStorageCsv implements TenistasStorage {
                             return Either.right(data.size());
                         } catch (IOException e) {
                             logger.error("Error al exportar Tenistas a CSV: {}", e.getMessage());
-                            return Either.left(new TenistaError.StorageError("Error al exportar Tenistas a CSV: " + e.getMessage()));
+                            return Either.left(new TenistaError.StorageError("al exportar Tenistas a CSV: " + e.getMessage()));
                         }
                     }
             );
