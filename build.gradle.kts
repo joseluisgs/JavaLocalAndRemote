@@ -22,6 +22,8 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.28")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.28")
 
+    // Json con Gson
+    implementation("com.google.code.gson:gson:2.11.0")
 
     // Test
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
@@ -35,3 +37,4 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
