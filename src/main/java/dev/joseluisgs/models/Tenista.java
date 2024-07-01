@@ -1,9 +1,6 @@
 package dev.joseluisgs.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,16 +14,22 @@ public class Tenista {
 
     @Builder.Default // Valor por defecto
     private long id = NEW_ID;
+    @NonNull
     private String nombre;
+    @NonNull
     private String pais;
     private int altura;
     private int peso;
     private int puntos;
+    @NonNull
     private Mano mano;
+    @NonNull
     private LocalDate fechaNacimiento;
     @Builder.Default // Valor por defecto
+    @NonNull
     private LocalDateTime createdAt = LocalDateTime.now();
     @Builder.Default // Valor por defecto
+    @NonNull
     private LocalDateTime updatedAt = LocalDateTime.now();
     @Builder.Default // Valor por defecto
     private boolean isDeleted = false;

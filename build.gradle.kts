@@ -2,6 +2,7 @@ plugins {
     id("java")
     // Lombock
     id("io.freefair.lombok") version "8.6"
+    kotlin("jvm")
 
 }
 
@@ -24,12 +25,14 @@ dependencies {
 
     // Project Reactor para programación reactiva
     implementation("io.projectreactor:reactor-core:3.6.7")
+    // Testear Reactor
+    testImplementation("io.projectreactor:reactor-test:3.6.7")
 
     // Vavr para programación funcional
     implementation("io.vavr:vavr:0.10.4")
 
-    // Json con Gson
-    implementation("com.google.code.gson:gson:2.11.0")
+    // Json con Moshi
+    implementation("com.squareup.moshi:moshi:1.15.1")
 
     // Test
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
@@ -44,3 +47,6 @@ tasks.test {
     useJUnitPlatform()
 }
 
+kotlin {
+    jvmToolchain(21)
+}

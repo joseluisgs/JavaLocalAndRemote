@@ -1,6 +1,7 @@
 package dev.joseluisgs.dto;
 
-import com.google.gson.annotations.SerializedName;
+import com.squareup.moshi.Json;
+import lombok.NonNull;
 
 /**
  * Data Transfer Object para Tenista
@@ -14,15 +15,22 @@ import com.google.gson.annotations.SerializedName;
 
 public record TenistaDto(
         long id,
+        @NonNull
         String nombre,
+        @NonNull
         String pais,
         int altura,
         int peso,
         int puntos,
+        @NonNull
         String mano,
-        @SerializedName("fecha_nacimiento") String fechaNacimiento,
-        @SerializedName("created_at") String createdAt,
-        @SerializedName("updated_at") String updatedAt,
-        @SerializedName("is_deleted") Boolean isDeleted
+        @Json(name = "fecha_nacimiento")
+        String fechaNacimiento,
+        @Json(name = "created_at")
+        String createdAt,
+        @Json(name = "updated_at")
+        String updatedAt,
+        @Json(name = "is_deleted")
+        Boolean isDeleted
 ) {
 }

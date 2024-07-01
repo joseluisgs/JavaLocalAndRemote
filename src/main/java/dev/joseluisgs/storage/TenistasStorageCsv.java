@@ -6,7 +6,6 @@ import dev.joseluisgs.error.TenistaError;
 import dev.joseluisgs.mapper.TenistaMapper;
 import dev.joseluisgs.models.Tenista;
 import io.vavr.control.Either;
-import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -24,7 +23,6 @@ public class TenistasStorageCsv implements TenistasStorage {
     private static final Logger logger = LoggerFactory.getLogger(TenistasStorageCsv.class);
 
     @Override
-    @NonNull
     public Mono<Either<TenistaError.StorageError, List<Tenista>>> importFile(File file) {
         // Uso de Mono.fromSupplier para ejecutar de forma asíncrona
         return Mono.fromSupplier(() -> {
@@ -36,7 +34,6 @@ public class TenistasStorageCsv implements TenistasStorage {
     }
 
     @Override
-    @NonNull
     public Mono<Either<TenistaError.StorageError, Integer>> exportFile(File file, List<Tenista> data) {
         return Mono.fromCallable(() -> {
             logger.debug("Exportando Tenistas a CSV asíncrono: {}", file);
@@ -60,8 +57,8 @@ public class TenistasStorageCsv implements TenistasStorage {
                                             String.valueOf(tenista.getPuntos()),
                                             tenista.getMano().name(),
                                             tenista.getFechaNacimiento().toString(),
-                                            tenista.getCreatedAt() != null ? tenista.getCreatedAt().toString() : "",
-                                            tenista.getUpdatedAt() != null ? tenista.getUpdatedAt().toString() : "",
+                                            tenista.getCreatedAt().toString(),
+                                            tenista.getUpdatedAt().toString(),
                                             String.valueOf(tenista.isDeleted())))
                                     .collect(Collectors.joining("\n"));
                             Files.writeString(f.toPath(), dataLines, StandardOpenOption.APPEND);
@@ -81,15 +78,14 @@ public class TenistasStorageCsv implements TenistasStorage {
             return Either.left(new TenistaError.StorageError("El fichero no existe: " + file.getAbsolutePath()));
         } else {
 
-            try {
+            try (var lines = Files.lines(file.toPath(), StandardCharsets.UTF_8)) {
                 logger.info("Leyendo líneas del fichero: " + file.getAbsolutePath());
-                // Usamos la API de Files de Java 8 y Api Stream
-                List<Tenista> tenistas = Files.lines(file.toPath(), StandardCharsets.UTF_8)
+                return Either.right(lines // Files.lines devuelve un Stream<String>
                         .skip(1) // Skip header
                         .map(line -> line.split(",")) // Split by comma
                         .map(this::parseLine) // Parse each line
-                        .collect(Collectors.toList());
-                return Either.right(tenistas);
+                        .collect(Collectors.toList())
+                );
             } catch (IOException e) {
                 logger.error("Error al leer el fichero: {}: {}", file.getAbsolutePath(), e.getMessage());
                 return Either.left(new TenistaError.StorageError("ERROR al leer el fichero " + file.getAbsolutePath() + ": " + e.getMessage()));
