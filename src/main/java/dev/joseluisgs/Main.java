@@ -5,12 +5,15 @@ import com.google.gson.GsonBuilder;
 import dev.joseluisgs.dto.TenistaDto;
 import dev.joseluisgs.mapper.TenistaMapper;
 import dev.joseluisgs.models.Tenista;
+import dev.joseluisgs.storage.TenistasStorageCsv;
 
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
         var tenista = new Tenista(
                 1L, "Roger Federer", "Suiza", 185, 85, 8000, Tenista.Mano.DIESTRO,
@@ -30,5 +33,47 @@ public class Main {
         TenistaDto deserializedTenista = gson.fromJson(jsonString, TenistaDto.class);
         System.out.println(deserializedTenista);
         System.out.println(TenistaMapper.toTenista(deserializedTenista));
+
+        // Vamos a probar el storage CSV
+        ArrayList<Tenista> tenistas = new ArrayList<>();
+        var storage = new TenistasStorageCsv();
+        var fileImport = Path.of("data", "tenistas.csv").toFile();
+        storage.importFile(fileImport)
+                .blockOptional()
+                .ifPresentOrElse(
+                        result -> result.fold(
+                                left -> {
+                                    System.out.println("Error: " + left.getMessage());
+                                    return null; // No necesita devolver ningún valor en particular
+                                },
+                                right -> {
+                                    int successValue = right.size();
+                                    System.out.println("Tenistas Importados: " + successValue);
+                                    tenistas.addAll(right);
+                                    return null; // No necesita devolver ningún valor en particular
+                                }
+                        ),
+                        () -> System.out.println("La operación ha devuelto un valor nulo")
+                );
+
+        // Ahora escribimos
+        var fileExport = Path.of("data", "tenistas_export.csv").toFile();
+        storage.exportFile(fileExport, tenistas)
+                .blockOptional()
+                .ifPresentOrElse(
+                        result -> result.fold(
+                                left -> {
+                                    System.out.println("Error: " + left.getMessage());
+                                    return null; // No necesita devolver ningún valor en particular
+                                },
+                                right -> {
+                                    int successValue = right;
+                                    System.out.println("Tenistas Exportados: " + successValue);
+                                    return null; // No necesita devolver ningún valor en particular
+                                }
+                        ),
+                        () -> System.out.println("La operación ha devuelto un valor nulo")
+                );
     }
+
 }

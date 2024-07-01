@@ -22,6 +22,12 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.28")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.28")
 
+    // Project Reactor para programación reactiva
+    implementation("io.projectreactor:reactor-core:3.6.7")
+
+    // Vavr para programación funcional
+    implementation("io.vavr:vavr:0.10.4")
+
     // Json con Gson
     implementation("com.google.code.gson:gson:2.11.0")
 

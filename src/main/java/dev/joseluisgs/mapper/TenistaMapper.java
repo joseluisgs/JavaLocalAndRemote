@@ -37,9 +37,9 @@ public class TenistaMapper {
                 tenistaDto.puntos(),
                 Tenista.Mano.valueOf(tenistaDto.mano()),
                 LocalDate.parse(tenistaDto.fechaNacimiento()),
-                LocalDateTime.parse(tenistaDto.createdAt()),
-                LocalDateTime.parse(tenistaDto.updatedAt()),
-                tenistaDto.isDeleted()
+                tenistaDto.createdAt() != null ? LocalDateTime.parse(tenistaDto.createdAt()) : LocalDateTime.now(),
+                tenistaDto.updatedAt() != null ? LocalDateTime.parse(tenistaDto.updatedAt()) : LocalDateTime.now(),
+                tenistaDto.isDeleted() != null ? tenistaDto.isDeleted() : false
         );
     }
 }
