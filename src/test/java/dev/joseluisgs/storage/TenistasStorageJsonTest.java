@@ -70,10 +70,6 @@ class TenistasStorageJsonTest {
 
         Files.writeString(validFile.toPath(), fileContent);
 
-        // Vamos a leer el fichero
-        var texto = Files.readString(validFile.toPath());
-        System.out.println(texto);
-
         Optional<Either<TenistaError.StorageError, List<Tenista>>> result = storage.importFile(validFile)
                 .blockOptional();
 
