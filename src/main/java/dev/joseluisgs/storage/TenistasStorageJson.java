@@ -1,8 +1,8 @@
 package dev.joseluisgs.storage;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
-import com.squareup.moshi.Types;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import dev.joseluisgs.dto.TenistaDto;
 import dev.joseluisgs.error.TenistaError;
 import dev.joseluisgs.mapper.TenistaMapper;
@@ -13,13 +13,8 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
+import java.io.*;
 import java.util.List;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class TenistasStorageJson implements TenistasStorage {
     private static final Logger logger = LoggerFactory.getLogger(TenistasStorageJson.class);
@@ -41,22 +36,13 @@ public class TenistasStorageJson implements TenistasStorage {
             return Either.left(new TenistaError.StorageError("El fichero no existe: " + file.getAbsolutePath()));
         } else {
 
-            try {
-                var moshi = new Moshi.Builder().build();
-                var listType = Types.newParameterizedType(List.class, TenistaDto.class);
-                JsonAdapter<List<TenistaDto>> jsonAdapter = moshi.adapter(listType);
-
-                String lines = Files.readString(file.toPath(), UTF_8);
-
-                List<TenistaDto> tenistasDto = jsonAdapter.fromJson(lines);
-
-                if (tenistasDto == null) {
-                    logger.error("Error al leer el fichero: {}: No se han podido leer los datos", file.getAbsolutePath());
-                    return Either.left(new TenistaError.StorageError("El fichero no contiene datos: " + file.getAbsolutePath()));
-                }
-
+            try (FileInputStream fis = new FileInputStream(file)) {
+                // Jackson nos permite leer un JSON y convertirlo en una lista de objetos
+                var jsonMapper = new ObjectMapper();
+                var tenistasDto = jsonMapper.readValue(fis, new TypeReference<List<TenistaDto>>() {
+                });
+                // Convertimos los DTO a Tenistas y los devolvemos
                 return Either.right(tenistasDto.stream().map(TenistaMapper::toTenista).toList());
-
             } catch (IOException e) {
                 logger.error("Error al leer el fichero: {}: {}", file.getAbsolutePath(), e.getMessage());
                 return Either.left(new TenistaError.StorageError("Error al leer el fichero: " + file.getAbsolutePath() + ": " + e.getMessage()));
@@ -75,13 +61,12 @@ public class TenistasStorageJson implements TenistasStorage {
                         return Either.left(error);
                     },
                     f -> {
-                        try {
-                            Moshi moshi = new Moshi.Builder().build();
-                            var listType = Types.newParameterizedType(List.class, TenistaDto.class);
-                            var jsonAdapter = moshi.adapter(listType).indent("  ");
-                            List<TenistaDto> tenistasDto = data.stream().map(TenistaMapper::toTenistaDto).toList();
-                            String json = jsonAdapter.toJson(tenistasDto);
-                            Files.writeString(f.toPath(), json, UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                        try (OutputStream fos = new FileOutputStream(f)) {
+                            // Jackson nos permite escribir un objeto en un JSON, con pretty printer para que sea más legible
+                            var jsonMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+                            // Convertimos los Tenistas a DTO y los escribimos
+                            jsonMapper.writeValue(fos, data.stream().map(TenistaMapper::toTenistaDto).toList());
+                            // Devolvemos el número de elementos exportados
                             return Either.right(data.size());
                         } catch (IOException e) {
                             logger.error("Error al exportar Tenistas a JSON: {}", e.getMessage());

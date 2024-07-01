@@ -1,6 +1,6 @@
 package dev.joseluisgs.dto;
 
-import com.squareup.moshi.Json;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.NonNull;
 
 /**
@@ -12,7 +12,6 @@ import lombok.NonNull;
  * Y tiene un constructor que inicializa todos los campos, y métodos para obtener los valores de los campos.
  * Es como una Data clase de Java, pero más concisa.
  */
-
 public record TenistaDto(
         long id,
         @NonNull
@@ -25,13 +24,13 @@ public record TenistaDto(
         @NonNull
         String mano,
         @NonNull
-        @Json(name = "fecha_nacimiento")
+        @JsonProperty("fecha_nacimiento")
         String fechaNacimiento,
-        @Json(name = "created_at")
+        @JsonProperty("created_at")
         String createdAt,
-        @Json(name = "updated_at")
+        @JsonProperty("updated_at")
         String updatedAt,
-        @Json(name = "is_deleted")
+        @JsonProperty("is_deleted")
         Boolean isDeleted
 ) {
 }

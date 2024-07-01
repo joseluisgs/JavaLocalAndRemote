@@ -2,7 +2,6 @@ plugins {
     id("java")
     // Lombock
     id("io.freefair.lombok") version "8.6"
-    kotlin("jvm")
 
 }
 
@@ -34,6 +33,9 @@ dependencies {
     // Json con Moshi
     implementation("com.squareup.moshi:moshi:1.15.1")
 
+    // Json con Jackson
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.1")
+
     // Test
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -47,6 +49,3 @@ tasks.test {
     useJUnitPlatform()
 }
 
-kotlin {
-    jvmToolchain(21)
-}
