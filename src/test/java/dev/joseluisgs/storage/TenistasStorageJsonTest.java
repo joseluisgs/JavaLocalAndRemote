@@ -16,9 +16,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TenistasStorageCsvTest {
+class TenistasStorageJsonTest {
 
-    private final TenistasStorageCsv storage = new TenistasStorageCsv();
+    private final TenistasStorageJson storage = new TenistasStorageJson();
     private final Tenista tenistaTest = Tenista.builder()
             .id(1L)
             .nombre("Roger Federer")
@@ -50,15 +50,29 @@ public class TenistasStorageCsvTest {
 
     @Test
     void importFileDebeDevolverTenistasSiExisteFichero(@TempDir Path tempDir) throws IOException {
-        var validFile = new File(tempDir.toFile(), "tenistas.csv");
+        var validFile = new File(tempDir.toFile(), "tenistas.json");
 
         String fileContent = """
-                id,nombre,pais,altura,peso,puntos,mano,fecha_nacimiento,createdAt,updatedAt,deletedAt,isDeleted
-                1,Roger Federer,Suiza,185,85,9600,DIESTRO,1981-08-08,,,
+                [
+                    {
+                        "id": 1,
+                        "nombre": "Roger Federer",
+                        "pais": "Suiza",
+                        "altura": 185,
+                        "peso": 85,
+                        "puntos": 9600,
+                        "mano": "DIESTRO",
+                        "fecha_nacimiento": "1981-08-08"
+                    }
+                ]
                 """;
 
 
         Files.writeString(validFile.toPath(), fileContent);
+
+        // Vamos a leer el fichero
+        var texto = Files.readString(validFile.toPath());
+        System.out.println(texto);
 
         Optional<Either<TenistaError.StorageError, List<Tenista>>> result = storage.importFile(validFile)
                 .blockOptional();
@@ -75,7 +89,7 @@ public class TenistasStorageCsvTest {
 
     @Test
     void exportFileDebeDevolverTenistasSiEscribeFichero(@TempDir Path tempDir) {
-        var file = new File(tempDir.toFile(), "tenistas_output.csv");
+        var file = new File(tempDir.toFile(), "tenistas_output.json");
 
 
         List<Tenista> tenistas = List.of(tenistaTest);
@@ -92,7 +106,7 @@ public class TenistasStorageCsvTest {
 
     @Test
     void exportFileDebeDevolverErrorSiFicheroNoExiste() {
-        var invalidFile = new File("/invalid/path/tenistas_export.csv");
+        var invalidFile = new File("/invalid/path/tenistas_export.json");
 
         List<Tenista> tenistas = List.of(tenistaTest);
 

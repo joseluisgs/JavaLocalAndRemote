@@ -24,6 +24,7 @@ public record TenistaDto(
         int puntos,
         @NonNull
         String mano,
+        @NonNull
         @Json(name = "fecha_nacimiento")
         String fechaNacimiento,
         @Json(name = "created_at")

@@ -45,7 +45,7 @@ public class TenistasStorageCsv implements TenistasStorage {
                     f -> {
                         try {
                             // Write header
-                            Files.writeString(f.toPath(), "id,nombre,pais,altura,peso,puntos,mano,fechaNacimiento,createdAt,updatedAt,deletedAt,isDeleted\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                            Files.writeString(f.toPath(), "id,nombre,pais,altura,peso,puntos,mano,fecha_nacimiento,createdAt,updatedAt,deletedAt,isDeleted\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                             // Write data
                             String dataLines = data.stream()
                                     .map(tenista -> String.join(",",
