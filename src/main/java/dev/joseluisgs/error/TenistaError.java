@@ -16,5 +16,17 @@ public abstract class TenistaError {
             super("ERROR: " + message);
         }
     }
-    
+
+    public static class DatabaseError extends TenistaError {
+        public DatabaseError(String message) {
+            super("ERROR: " + message);
+        }
+    }
+
+    public static class NotFound extends TenistaError {
+        public NotFound(Long id) {
+            super("ERROR: No se ha encontrado el tenista con id: " + id);
+        }
+    }
+
 }

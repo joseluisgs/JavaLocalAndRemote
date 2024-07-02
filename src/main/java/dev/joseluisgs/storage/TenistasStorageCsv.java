@@ -26,50 +26,58 @@ public class TenistasStorageCsv implements TenistasStorage {
     public Mono<Either<TenistaError.StorageError, List<Tenista>>> importFile(File file) {
         // Uso de Mono.fromSupplier para ejecutar de forma asíncrona
         return Mono.fromSupplier(() -> {
-            logger.info("Importando Tenistas de CSV asíncrono: {}", file);
-            return readLines(file);
-            // Nos aseguramos de que se ejecute en un hilo no bloqueante
-            // Para ello usamos el Scheduler boundedElastic que es un Scheduler que se ajusta a la demanda y es adecuado para operaciones de E/S no bloqueantes.
-        }).subscribeOn(Schedulers.boundedElastic());
+                    logger.info("Importando Tenistas de CSV asíncrono: {}", file);
+                    return readLines(file);
+                    // Nos aseguramos de que se ejecute en un hilo no bloqueante
+                    // Para ello usamos el Scheduler boundedElastic que es un Scheduler que se ajusta a la demanda y es adecuado para operaciones de E/S no bloqueantes.
+                }).subscribeOn(Schedulers.boundedElastic())
+                .onErrorResume(e -> {
+                    logger.error("Error al importar Tenistas de CSV: {}", e.getMessage());
+                    return Mono.just(Either.left(new TenistaError.StorageError("Error al importar Tenistas de CSV: " + e.getMessage())));
+                });
     }
 
     @Override
     public Mono<Either<TenistaError.StorageError, Integer>> exportFile(File file, List<Tenista> data) {
         return Mono.fromCallable(() -> {
-            logger.debug("Exportando Tenistas a CSV asíncrono: {}", file);
-            return ensureFileCanExists(file).<Either<TenistaError.StorageError, Integer>>fold(
-                    error -> {
-                        logger.error("Error al exportar Tenistas a CSV: {}", error.getMessage());
-                        return Either.left(error);
-                    },
-                    f -> {
-                        try {
-                            // Write header
-                            Files.writeString(f.toPath(), "id,nombre,pais,altura,peso,puntos,mano,fecha_nacimiento,createdAt,updatedAt,deletedAt,isDeleted\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-                            // Write data
-                            String dataLines = data.stream()
-                                    .map(tenista -> String.join(",",
-                                            String.valueOf(tenista.getId()),
-                                            tenista.getNombre(),
-                                            tenista.getPais(),
-                                            String.valueOf(tenista.getAltura()),
-                                            String.valueOf(tenista.getPeso()),
-                                            String.valueOf(tenista.getPuntos()),
-                                            tenista.getMano().name(),
-                                            tenista.getFechaNacimiento().toString(),
-                                            tenista.getCreatedAt().toString(),
-                                            tenista.getUpdatedAt().toString(),
-                                            String.valueOf(tenista.isDeleted())))
-                                    .collect(Collectors.joining("\n"));
-                            Files.writeString(f.toPath(), dataLines, StandardOpenOption.APPEND);
-                            return Either.right(data.size());
-                        } catch (IOException e) {
-                            logger.error("Error al exportar Tenistas a CSV: {}", e.getMessage());
-                            return Either.left(new TenistaError.StorageError("al exportar Tenistas a CSV: " + e.getMessage()));
-                        }
-                    }
-            );
-        }).subscribeOn(Schedulers.boundedElastic());
+                    logger.debug("Exportando Tenistas a CSV asíncrono: {}", file);
+                    return ensureFileCanExists(file).<Either<TenistaError.StorageError, Integer>>fold(
+                            error -> {
+                                logger.error("Error al exportar Tenistas a CSV: {}", error.getMessage());
+                                return Either.left(error);
+                            },
+                            f -> {
+                                try {
+                                    // Write header
+                                    Files.writeString(f.toPath(), "id,nombre,pais,altura,peso,puntos,mano,fecha_nacimiento,createdAt,updatedAt,deletedAt,isDeleted\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                                    // Write data
+                                    String dataLines = data.stream()
+                                            .map(tenista -> String.join(",",
+                                                    String.valueOf(tenista.getId()),
+                                                    tenista.getNombre(),
+                                                    tenista.getPais(),
+                                                    String.valueOf(tenista.getAltura()),
+                                                    String.valueOf(tenista.getPeso()),
+                                                    String.valueOf(tenista.getPuntos()),
+                                                    tenista.getMano().name(),
+                                                    tenista.getFechaNacimiento().toString(),
+                                                    tenista.getCreatedAt().toString(),
+                                                    tenista.getUpdatedAt().toString(),
+                                                    String.valueOf(tenista.isDeleted())))
+                                            .collect(Collectors.joining("\n"));
+                                    Files.writeString(f.toPath(), dataLines, StandardOpenOption.APPEND);
+                                    return Either.right(data.size());
+                                } catch (IOException e) {
+                                    logger.error("Error al exportar Tenistas a CSV: {}", e.getMessage());
+                                    return Either.left(new TenistaError.StorageError("al exportar Tenistas a CSV: " + e.getMessage()));
+                                }
+                            }
+                    );
+                }).subscribeOn(Schedulers.boundedElastic())
+                .onErrorResume(e -> {
+                    logger.error("Error al exportar Tenistas a CSV: {}", e.getMessage());
+                    return Mono.just(Either.left(new TenistaError.StorageError("Error al exportar Tenistas a CSV: " + e.getMessage())));
+                });
     }
 
     private Either<TenistaError.StorageError, List<Tenista>> readLines(File file) {
@@ -84,7 +92,7 @@ public class TenistasStorageCsv implements TenistasStorage {
                         .skip(1) // Skip header
                         .map(line -> line.split(",")) // Split by comma
                         .map(this::parseLine) // Parse each line
-                        .collect(Collectors.toList())
+                        .toList() // Collect to List
                 );
             } catch (IOException e) {
                 logger.error("Error al leer el fichero: {}: {}", file.getAbsolutePath(), e.getMessage());

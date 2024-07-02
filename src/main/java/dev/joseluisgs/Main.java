@@ -3,15 +3,13 @@ package dev.joseluisgs;
 
 import dev.joseluisgs.database.JdbiManager;
 import dev.joseluisgs.database.TenistasDao;
-import dev.joseluisgs.mapper.TenistaMapper;
 import dev.joseluisgs.models.Tenista;
+import dev.joseluisgs.repository.TenistasRepositoryLocal;
 import dev.joseluisgs.storage.TenistasStorageJson;
-import org.jdbi.v3.core.Jdbi;
-import org.jdbi.v3.sqlite3.SQLitePlugin;
-import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Main {
     // Vamos a probar jdbi en sqlite memoria
@@ -28,7 +26,7 @@ public class Main {
                 .ifPresentOrElse(
                         result -> result.fold(
                                 left -> {
-                                    System.out.println("Error: " + left.getMessage());
+                                    System.out.println(left.getMessage());
                                     return null; // No necesita devolver ningún valor en particular
                                 },
                                 right -> {
@@ -41,73 +39,203 @@ public class Main {
                         () -> System.out.println("La operación ha devuelto un valor nulo")
                 );
 
-        var db = Jdbi.create("jdbc:sqlite:tenistas")
-                .installPlugin(new SQLitePlugin())
-                .installPlugin(new SqlObjectPlugin());
-        var result = db.withExtension(TenistasDao.class, dao -> {
-            dao.createTable();
-            // Borramos todos los tenistas
-            dao.removeAll();
-            // Insertamos los tenistas
-            var tenista = TenistaMapper.toTenistaEntity(tenistas.getFirst());
-            var id = dao.insert(
-                    tenista.nombre(),
-                    tenista.pais(),
-                    tenista.altura(),
-                    tenista.peso(),
-                    tenista.puntos(),
-                    tenista.mano(),
-                    tenista.fecha_nacimiento(),
-                    tenista.created_at(),
-                    tenista.updated_at()
-            );
-            System.out.println("Tenista insertado: " + id);
+        // Creamos el JdbiManager
+        JdbiManager<TenistasDao> jdbiManager = new JdbiManager<>("tenistas.db", TenistasDao.class);
+        // Creamos el repositorio
+        TenistasRepositoryLocal local = new TenistasRepositoryLocal(jdbiManager);
+        // Seleccionamos todos los tenistas
+        local.getAll()
+                .blockOptional()
+                .ifPresentOrElse(
+                        result -> result.fold(
+                                left -> {
+                                    System.out.println(left.getMessage());
+                                    return null; // No necesita devolver ningún valor en particular
+                                },
+                                right -> {
+                                    int successValue = right.size();
+                                    System.out.println("Tenistas recuperados: " + successValue);
+                                    return null; // No necesita devolver ningún valor en particular
+                                }
+                        ),
+                        () -> System.out.println("La operación ha devuelto un valor nulo")
+                );
 
-            // Seleccionamos todos los tenistas
-            dao.getAll().forEach(System.out::println);
+        var newTenista = tenistas.getFirst();
+        // Insertamos un nuevo tenista
+        local.save(newTenista)
+                .blockOptional()
+                .ifPresentOrElse(
+                        result -> result.fold(
+                                left -> {
+                                    System.out.println(left.getMessage());
+                                    return null; // No necesita devolver ningún valor en particular
+                                },
+                                right -> {
+                                    System.out.println("Tenista insertado: " + right);
+                                    return null; // No necesita devolver ningún valor en particular
+                                }
+                        ),
+                        () -> System.out.println("La operación ha devuelto un valor nulo")
+                );
 
-            // Seleccionamos un tenista
-            var tenistaEntity = dao.findById(id);
-            System.out.println("Tenista encontrado: " + tenistaEntity);
+        // buscamos un tenista
+        local.getById(newTenista.getId())
+                .blockOptional()
+                .ifPresentOrElse(
+                        result -> result.fold(
+                                left -> {
+                                    System.out.println(left.getMessage());
+                                    return null; // No necesita devolver ningún valor en particular
+                                },
+                                right -> {
+                                    System.out.println("Tenista encontrado: " + right);
+                                    return null; // No necesita devolver ningún valor en particular
+                                }
+                        ),
+                        () -> System.out.println("La operación ha devuelto un valor nulo")
+                );
 
-            // Actualizamos un tenista
-            var tenistaUpdate = TenistaMapper.toTenistaEntity(tenistas.get(2));
+        // Buscamos un tenista que no existe
+        local.getById(-1L)
+                .blockOptional()
+                .ifPresentOrElse(
+                        result -> result.fold(
+                                left -> {
+                                    System.out.println(left.getMessage());
+                                    return null; // No necesita devolver ningún valor en particular
+                                },
+                                right -> {
+                                    System.out.println("Tenista encontrado: " + right);
+                                    return null; // No necesita devolver ningún valor en particular
+                                }
+                        ),
+                        () -> System.out.println("La operación ha devuelto un valor nulo")
+                );
 
-            var idUpdate = dao.update(
-                    1,
-                    tenistaUpdate.nombre(),
-                    tenistaUpdate.pais(),
-                    tenistaUpdate.altura(),
-                    tenistaUpdate.peso(),
-                    tenistaUpdate.puntos(),
-                    tenistaUpdate.mano(),
-                    tenistaUpdate.fecha_nacimiento(),
-                    tenistaUpdate.updated_at(),
-                    tenistaUpdate.is_deleted()
-            );
+        // Actualizamos un tenista
+        var updatedTenista = tenistas.get(1);
+        local.update(newTenista.getId(), updatedTenista)
+                .blockOptional()
+                .ifPresentOrElse(
+                        result -> result.fold(
+                                left -> {
+                                    System.out.println(left.getMessage());
+                                    return null; // No necesita devolver ningún valor en particular
+                                },
+                                right -> {
+                                    System.out.println("Tenista actualizado: " + right);
+                                    return null; // No necesita devolver ningún valor en particular
+                                }
+                        ),
+                        () -> System.out.println("La operación ha devuelto un valor nulo")
+                );
 
-            System.out.println("Tenista actualizado: " + idUpdate);
+        // Actualizamos un tenista que no existe
+        local.update(-1L, updatedTenista)
+                .blockOptional()
+                .ifPresentOrElse(
+                        result -> result.fold(
+                                left -> {
+                                    System.out.println(left.getMessage());
+                                    return null; // No necesita devolver ningún valor en particular
+                                },
+                                right -> {
+                                    System.out.println("Tenista actualizado: " + right);
+                                    return null; // No necesita devolver ningún valor en particular
+                                }
+                        ),
+                        () -> System.out.println("La operación ha devuelto un valor nulo")
+                );
 
-            // Seleccionamos todos los tenistas
-            dao.getAll().forEach(System.out::println);
+        // Eliminamos un tenista
+        local.delete(newTenista.getId())
+                .blockOptional()
+                .ifPresentOrElse(
+                        result -> result.fold(
+                                left -> {
+                                    System.out.println(left.getMessage());
+                                    return null; // No necesita devolver ningún valor en particular
+                                },
+                                right -> {
+                                    System.out.println("Tenista eliminado: " + right);
+                                    return null; // No necesita devolver ningún valor en particular
+                                }
+                        ),
+                        () -> System.out.println("La operación ha devuelto un valor nulo")
+                );
 
-            // Borramos un tenista
-            var idDelete = dao.delete(1);
-            System.out.println("Tenista borrado: " + idDelete);
+        // Eliminamos un tenista que no existe
+        local.delete(-1L)
+                .blockOptional()
+                .ifPresentOrElse(
+                        result -> result.fold(
+                                left -> {
+                                    System.out.println(left.getMessage());
+                                    return null; // No necesita devolver ningún valor en particular
+                                },
+                                right -> {
+                                    System.out.println("Tenista eliminado: " + right);
+                                    return null; // No necesita devolver ningún valor en particular
+                                }
+                        ),
+                        () -> System.out.println("La operación ha devuelto un valor nulo")
+                );
 
-            // Seleccionamos todos los tenistas
-            dao.getAll().forEach(System.out::println);
+        // Eliminamos todos los tenistas
+        local.removeAll()
+                .blockOptional()
+                .ifPresentOrElse(
+                        result -> result.fold(
+                                left -> {
+                                    System.out.println(left.getMessage());
+                                    return null; // No necesita devolver ningún valor en particular
+                                },
+                                right -> {
+                                    System.out.println("Tenistas eliminados: " + right);
+                                    return null; // No necesita devolver ningún valor en particular
+                                }
+                        ),
+                        () -> System.out.println("La operación ha devuelto un valor nulo")
+                );
 
-            return dao.getAll();
-        });
-        System.out.println("Tenistas de la base de datos");
-        System.out.println(result.size());
-        result.forEach(System.out::println);
+        // Vamos a probar a insertar todos los tenistas
+        local.saveAll(tenistas)
+                .blockOptional()
+                .ifPresentOrElse(
+                        result -> result.fold(
+                                left -> {
+                                    System.out.println(left.getMessage());
+                                    return null; // No necesita devolver ningún valor en particular
+                                },
+                                right -> {
+                                    System.out.println("Tenistas insertados: " + right);
+                                    return null; // No necesita devolver ningún valor en particular
+                                }
+                        ),
+                        () -> System.out.println("La operación ha devuelto un valor nulo")
+                );
 
-        JdbiManager<TenistasDao> dbManager = new JdbiManager<>("jdbc:sqlite:tenistas", TenistasDao.class);
+        // Seleccionamos todos los tenistas
+        // Acuerdate de esta forma con el map, porque lo vas a usar mucho con el Optional
+        var lista = local.getAll()
+                .blockOptional()
+                .map(result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // Devuelve una lista vacía en caso de error
+                        },
+                        right -> {
+                            return right; // Devuelve la lista de tenistas en caso de éxito
+                        }
+                ))
+                .orElse(Collections.emptyList()); // En caso de Optional.empty()
 
-        var res = dbManager.with(TenistasDao::getAll);
-        System.out.println("Tenistas de la base de datos 2");
+        // Aquí se puede usar la variable "tenistas". Si es null, no se encontraron tenistas o hubo un error.
+        System.out.println("Tenistas recuperados: " + lista.size());
+        // Mostrar el id y el tenista
+        lista.forEach(t -> System.out.println(t.getId() + " - " + t.getNombre()));
+
     }
 
 }

@@ -10,12 +10,13 @@ public class JdbiManager<T> {
     private final Jdbi jdbi;
     private final Class<T> daoClass;
 
-    public JdbiManager(String databaseUrl, Class<T> daoClass) {
-        logger.debug("Creando JdbiManager con URL: {}", databaseUrl);
+    public JdbiManager(String database, Class<T> daoClass) {
+        logger.debug("Creando JdbiManager con URL: {}", database);
         this.daoClass = daoClass;
-        this.jdbi = Jdbi.create(databaseUrl);
+        this.jdbi = Jdbi.create("jdbc:sqlite:" + database); // jdbc:sqlite:tenistas
         this.jdbi.installPlugin(new SqlObjectPlugin());
     }
+
 
     // Para operaciones con la base de datos que devuelven un valor
     public <R> R with(HandleFunction<T, R> handleFunction) {

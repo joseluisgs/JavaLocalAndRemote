@@ -36,12 +36,12 @@ public interface TenistasDao {
     @SqlQuery("SELECT * FROM TenistaEntity")
     // @RegisterRowMapper(TenistaEntityMapper.class)
     @RegisterConstructorMapper(TenistaEntity.class)
-    List<TenistaEntity> getAll();
+    List<TenistaEntity> selectAll();
 
     // select by id
     @SqlQuery("SELECT * FROM TenistaEntity WHERE id = :id")
     @RegisterConstructorMapper(TenistaEntity.class)
-    Optional<TenistaEntity> findById(@Bind("id") long id);
+    Optional<TenistaEntity> selectById(@Bind("id") long id);
 
     // insert and return id
     @SqlUpdate("INSERT INTO TenistaEntity (nombre, pais, altura, peso, puntos, mano, fecha_nacimiento, created_at, updated_at) VALUES (:nombre, :pais, :altura, :peso, :puntos, :mano, :fecha_nacimiento, :created_at, :updated_at)")
