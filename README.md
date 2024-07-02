@@ -126,3 +126,18 @@ recientemente usado.
 
 Enlace a
 los [commit de la sección](https://github.com/joseluisgs/JavaLocalAndRemote/tree/bc281698c58a160279ef5c4c4f0da3070ecb9e2e).
+
+## Repositorio Local
+
+Para la realización del repositorio local, hemos usado SQLite [JDBI](https://jdbi.org/),
+una librería que nos permite definir las
+tablas y las consultas de una manera muy sencilla, de hecho hemos usado SQLite con su version SqlObject, obteniendo el
+DAO
+
+Para la implementación del repositorio local, hemos creado una interfaz `Repository` que define las operaciones de
+lectura y escritura de datos. Seguimos usando asincronía con Flux y trabajando ROP con Either.
+
+De esta manera hemos podido separar la lógica de la base de datos de la lógica de la aplicación.
+
+Enlace a
+los [commit de la sección]https://github.com/joseluisgs/JavaLocalAndRemote/tree/7739f4fa3b755260afd762996cf2e68ddccdd231).
