@@ -30,11 +30,16 @@ dependencies {
     // Vavr para programación funcional
     implementation("io.vavr:vavr:0.10.4")
 
-    // Json con Moshi
-    implementation("com.squareup.moshi:moshi:1.15.1")
-
     // Json con Jackson
     implementation("com.fasterxml.jackson.core:jackson-databind:2.17.1")
+
+    // JDBI
+    implementation("org.jdbi:jdbi3-core:3.45.2") // JDBI Core
+    implementation("org.jdbi:jdbi3-sqlobject:3.45.2") // JDBI SQL Object
+    implementation("org.jdbi:jdbi3-sqlite:3.45.2") // JDBI SQLite
+    // Driver para SQLite
+    implementation("org.xerial:sqlite-jdbc:3.46.0.0")
+
 
     // Test
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
