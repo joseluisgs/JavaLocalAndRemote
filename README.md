@@ -90,7 +90,7 @@ escritura.
 
 Luego, crearemos una implementación de esta interfaz para almacenar los datos en formatos CSV y JSON.
 Para facilitar la serialización y deserialización de los datos en Json
-usaremos [`Moshi`](https://www.baeldung.com/java-json-moshi).
+usaremos [`Jackson`](https://www.baeldung.com/jackson).
 
 Haremos uso de mapeadores para convertir los datos de un formato a otro.
 
