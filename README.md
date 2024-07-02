@@ -140,4 +140,4 @@ lectura y escritura de datos. Seguimos usando asincronía con Flux y trabajando 
 De esta manera hemos podido separar la lógica de la base de datos de la lógica de la aplicación.
 
 Enlace a
-los [commit de la sección]https://github.com/joseluisgs/JavaLocalAndRemote/tree/7739f4fa3b755260afd762996cf2e68ddccdd231).
+los [commit de la sección](https://github.com/joseluisgs/JavaLocalAndRemote/tree/7739f4fa3b755260afd762996cf2e68ddccdd231).
