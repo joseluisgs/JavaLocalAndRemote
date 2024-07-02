@@ -2,6 +2,8 @@ package dev.joseluisgs.database;
 
 import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
+// Podemos usar anotaciones para mapear las columnas de la base de datos a los atributos de la clase
+// No es obligatorio, si se llaman igual no hace falta
 public record TenistaEntity(
         @ColumnName("id")
         long id,

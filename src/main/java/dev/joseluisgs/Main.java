@@ -1,6 +1,7 @@
 package dev.joseluisgs;
 
 
+import dev.joseluisgs.database.JdbiManager;
 import dev.joseluisgs.database.TenistasDao;
 import dev.joseluisgs.mapper.TenistaMapper;
 import dev.joseluisgs.models.Tenista;
@@ -103,7 +104,10 @@ public class Main {
         System.out.println(result.size());
         result.forEach(System.out::println);
 
+        JdbiManager<TenistasDao> dbManager = new JdbiManager<>("jdbc:sqlite:tenistas", TenistasDao.class);
 
+        var res = dbManager.with(TenistasDao::getAll);
+        System.out.println("Tenistas de la base de datos 2");
     }
 
 }

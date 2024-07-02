@@ -6,6 +6,11 @@ import org.jdbi.v3.core.statement.StatementContext;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Mapeador de TenistaEntity
+ * Podemos tener un mapeador para ResultSet y otro para ResultSet y StatementContext
+ * Y así poder tener más control sobre el mapeo si es más complejo.
+ */
 public class TenistaEntityMapper implements RowMapper<TenistaEntity> {
     public TenistaEntityMapper() {
         super();
