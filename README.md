@@ -98,7 +98,7 @@ En todo momento trabajaremos la asincronía y la reactividad mediante ROP en la 
 Either.
 
 Enlace a
-los [commit de la sección](https://github.com/joseluisgs/JavaLocalAndRemote/tree/cf00ab2adcb95825cb291fe1d811faa1281b0082).
+los [commit de la sección](https://github.com/joseluisgs/JavaLocalAndRemote/tree/f600e010270c47606abad7f9b7ccf8b72a0b39d4).
 
 ## Cache en Memoria
 
