@@ -2,7 +2,7 @@ package dev.joseluisgs.storage;
 
 import dev.joseluisgs.error.TenistaError;
 import dev.joseluisgs.models.Tenista;
-import io.vavr.control.Either;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -12,10 +12,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@DisplayName("Pruebas para TenistasStorageJson")
 class TenistasStorageJsonTest {
 
     private final TenistasStorageJson storage = new TenistasStorageJson();
@@ -33,22 +33,25 @@ class TenistasStorageJsonTest {
     Path tempDir;
 
     @Test
+    @DisplayName("Importar archivo debe devolver error si no existe fichero")
     void importFileDebeDevolverErrorSiNoExisteFichero() {
         File nonExistentFile = new File(tempDir.toFile(), "fichero_no_existe.csv");
 
-        Optional<Either<TenistaError.StorageError, List<Tenista>>> result = storage.importFile(nonExistentFile)
+        var result = storage.importFile(nonExistentFile)
                 .blockOptional();
 
         assertAll(
-                () -> assertTrue(result.isPresent()),
-                () -> assertTrue(result.get().isLeft()),
-                () -> assertInstanceOf(TenistaError.StorageError.class, result.get().getLeft()),
-                () -> assertTrue(result.get().getLeft().getMessage().contains("ERROR: El fichero no existe"))
+                "Resultados de la importación de archivo inexistente",
+                () -> assertTrue(result.isPresent(), "El resultado debe estar presente"),
+                () -> assertTrue(result.get().isLeft(), "El resultado debe contener un error"),
+                () -> assertInstanceOf(TenistaError.StorageError.class, result.get().getLeft(), "El error debe ser de tipo StorageError"),
+                () -> assertTrue(result.get().getLeft().getMessage().contains("ERROR: El fichero no existe"), "El mensaje del error debe contener 'ERROR: El fichero no existe'")
         );
 
     }
 
     @Test
+    @DisplayName("Importar archivo debe devolver tenistas si existe fichero")
     void importFileDebeDevolverTenistasSiExisteFichero(@TempDir Path tempDir) throws IOException {
         var validFile = new File(tempDir.toFile(), "tenistas.json");
 
@@ -70,50 +73,54 @@ class TenistasStorageJsonTest {
 
         Files.writeString(validFile.toPath(), fileContent);
 
-        Optional<Either<TenistaError.StorageError, List<Tenista>>> result = storage.importFile(validFile)
+        var result = storage.importFile(validFile)
                 .blockOptional();
 
         assertAll(
-                () -> assertTrue(result.isPresent()),
-                () -> assertTrue(result.get().isRight()),
-                () -> assertEquals(1, result.get().get().size()),
-                () -> assertEquals("Roger Federer", result.get().get().get(0).getNombre()),
-                () -> assertEquals("Suiza", result.get().get().getFirst().getPais())
+                "Resultados de la importación de archivo válido",
+                () -> assertTrue(result.isPresent(), "El resultado debe estar presente"),
+                () -> assertTrue(result.get().isRight(), "El resultado debe contener una lista de tenistas"),
+                () -> assertEquals(1, result.get().get().size(), "El tamaño de la lista de tenistas debe ser 1"),
+                () -> assertEquals("Roger Federer", result.get().get().get(0).getNombre(), "El nombre del primer tenista debe ser Roger Federer"),
+                () -> assertEquals("Suiza", result.get().get().getFirst().getPais(), "El país del primer tenista debe ser Suiza")
         );
 
     }
 
     @Test
+    @DisplayName("Exportar archivo debe devolver tenistas si escribe fichero")
     void exportFileDebeDevolverTenistasSiEscribeFichero(@TempDir Path tempDir) {
         var file = new File(tempDir.toFile(), "tenistas_output.json");
 
-
         List<Tenista> tenistas = List.of(tenistaTest);
 
-        Optional<Either<TenistaError.StorageError, Integer>> result = storage.exportFile(file, tenistas)
+        var result = storage.exportFile(file, tenistas)
                 .blockOptional();
 
         assertAll(
-                () -> assertTrue(result.isPresent()),
-                () -> assertTrue(result.get().isRight()),
-                () -> assertEquals(1, result.get().get())
+                "Resultados de la exportación a archivo",
+                () -> assertTrue(result.isPresent(), "El resultado debe estar presente"),
+                () -> assertTrue(result.get().isRight(), "El resultado debe contener un valor correcto"),
+                () -> assertEquals(1, result.get().get(), "El número de tenistas exportados debe ser 1")
         );
     }
 
     @Test
+    @DisplayName("Exportar archivo debe devolver error si el fichero no existe")
     void exportFileDebeDevolverErrorSiFicheroNoExiste() {
         var invalidFile = new File("/invalid/path/tenistas_export.json");
 
         List<Tenista> tenistas = List.of(tenistaTest);
 
-        Optional<Either<TenistaError.StorageError, Integer>> result = storage.exportFile(invalidFile, tenistas)
+        var result = storage.exportFile(invalidFile, tenistas)
                 .blockOptional();
 
         assertAll(
-                () -> assertTrue(result.isPresent()),
-                () -> assertTrue(result.get().isLeft()),
-                () -> assertInstanceOf(TenistaError.StorageError.class, result.get().getLeft()),
-                () -> assertTrue(result.get().getLeft().getMessage().contains("Error al acceder al fichero"))
+                "Resultados de la exportación a archivo inválido",
+                () -> assertTrue(result.isPresent(), "El resultado debe estar presente"),
+                () -> assertTrue(result.get().isLeft(), "El resultado debe contener un error"),
+                () -> assertInstanceOf(TenistaError.StorageError.class, result.get().getLeft(), "El error debe ser de tipo StorageError"),
+                () -> assertTrue(result.get().getLeft().getMessage().contains("Error al acceder al fichero"), "El mensaje del error debe contener 'Error al acceder al fichero'")
         );
     }
 }

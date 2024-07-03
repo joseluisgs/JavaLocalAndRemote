@@ -33,7 +33,7 @@ public class TenistasRepositoryRemote implements TenistasRepository {
                 .subscribeOn(Schedulers.boundedElastic())
                 .onErrorResume(e -> {
                     logger.error("Error obteniendo todos los tenistas", e);
-                    return Mono.just(Either.left(new TenistaError.RemoteError("No se ha obteniendo todos los tenistas de la api rest ->" + e.getMessage())));
+                    return Mono.just(Either.left(new TenistaError.RemoteError("No se ha obteniendo todos los tenistas de la api rest -> " + e.getMessage())));
                 });
     }
 
@@ -67,7 +67,7 @@ public class TenistasRepositoryRemote implements TenistasRepository {
                 .subscribeOn(Schedulers.boundedElastic())
                 .onErrorResume(e -> {
                     //logger.error("Error guardando tenista {}", tenista, e);
-                    return Mono.just(Either.left(new TenistaError.RemoteError("No se ha guardando tenista en la api rest ->" + e.getMessage())));
+                    return Mono.just(Either.left(new TenistaError.RemoteError("No se ha guardando tenista en la api rest -> " + e.getMessage())));
                 });
         //.switchIfEmpty(Mono.just(Either.left(new TenistaError.StorageError("No se ha guardando tenista"))));
     }
@@ -86,7 +86,7 @@ public class TenistasRepositoryRemote implements TenistasRepository {
                 .subscribeOn(Schedulers.boundedElastic())
                 .onErrorResume(e -> {
                     //logger.error("Error actualizando tenista con id {}", id, e);
-                    return Mono.just(Either.left(new TenistaError.RemoteError("No se ha actualizando tenista en la api rest con id " + id + " ->" + e.getMessage())));
+                    return Mono.just(Either.left(new TenistaError.RemoteError("No se ha actualizando tenista en la api rest con id " + id + " -> " + e.getMessage())));
                 });
         //.switchIfEmpty(Mono.just(Either.left(new TenistaError.RemoteError(id))));
     }
@@ -99,7 +99,7 @@ public class TenistasRepositoryRemote implements TenistasRepository {
                 .subscribeOn(Schedulers.boundedElastic())
                 .onErrorResume(e -> {
                     //logger.error("Error borrando tenista con id {}", id, e);
-                    return Mono.just(Either.left(new TenistaError.RemoteError("No se ha borrando tenista en la api rest con id " + id + " ->" + e.getMessage())));
+                    return Mono.just(Either.left(new TenistaError.RemoteError("No se ha borrando tenista en la api rest con id " + id + " -> " + e.getMessage())));
                 });
         //.switchIfEmpty(Mono.just(Either.left(new TenistaError.NotFound(id))));
     }
