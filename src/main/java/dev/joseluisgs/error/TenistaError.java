@@ -29,4 +29,10 @@ public abstract class TenistaError {
         }
     }
 
+    public static class RemoteError extends TenistaError {
+        public RemoteError(String message) {
+            super("ERROR: " + message);
+        }
+    }
+
 }

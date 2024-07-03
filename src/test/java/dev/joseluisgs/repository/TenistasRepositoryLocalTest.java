@@ -140,7 +140,7 @@ class TenistasRepositoryLocalTest {
         assertAll(
                 () -> assertTrue(result.isPresent(), "El resultado no debe ser nulo"),
                 () -> assertTrue(result.get().isLeft(), "El resultado debe ser un error"),
-                () -> assertEquals("ERROR: No se ha encontrado el tenista con id: 1", result.get().getLeft().getMessage(), "El mensaje de error debe ser correcto")
+                () -> assertEquals("ERROR: No se ha encontrado tenista en la bd con id 1", result.get().getLeft().getMessage(), "El mensaje de error debe ser correcto")
         );
 
         verify(dao, times(1)).selectById(1L);

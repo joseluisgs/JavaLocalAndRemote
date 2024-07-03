@@ -47,8 +47,8 @@ public class TenistasRepositoryLocal implements TenistasRepository {
                     return Either.<TenistaError, List<Tenista>>right(lista);
                 }).subscribeOn(Schedulers.boundedElastic())
                 .onErrorResume(e -> {
-                    logger.error("Error obteniendo todos los tenistas", e);
-                    return Mono.just(Either.left(new TenistaError.DatabaseError("Error obteniendo todos los tenistas ->" + e.getMessage())));
+                    //logger.error("Error obteniendo todos los tenistas", e);
+                    return Mono.just(Either.left(new TenistaError.DatabaseError("No se han obtenido todos los tenistas ->" + e.getMessage())));
                 });
     }
 
@@ -59,11 +59,11 @@ public class TenistasRepositoryLocal implements TenistasRepository {
         return Mono.fromSupplier(() -> {
                     var tenista = db.with(dao -> dao.selectById(id)).map(TenistaMapper::toTenista);
                     // Devolvemos el tenista o un error si no existe
-                    return tenista.map(Either::<TenistaError, Tenista>right).orElseGet(() -> Either.left(new TenistaError.NotFound(id)));
+                    return tenista.map(Either::<TenistaError, Tenista>right).orElseGet(() -> Either.left(new TenistaError.DatabaseError("No se ha encontrado tenista en la bd con id " + id)));
                 }).subscribeOn(Schedulers.boundedElastic())
                 .onErrorResume(e -> {
-                    logger.error("Error obteniendo tenista con id {}", id, e);
-                    return Mono.just(Either.left(new TenistaError.DatabaseError("Error obteniendo tenista con id " + id + "->" + e.getMessage())));
+                    //logger.error("Error obteniendo tenista con id {}", id, e);
+                    return Mono.just(Either.left(new TenistaError.DatabaseError("No se ha encontrado tenista en la bd con id " + id + " -> " + e.getMessage())));
                 });
 
         /**
@@ -99,7 +99,7 @@ public class TenistasRepositoryLocal implements TenistasRepository {
                     ));
 
                     if (id == null) {
-                        return Either.<TenistaError, Tenista>left(new TenistaError.DatabaseError("Error al guardar el tenista"));
+                        return Either.<TenistaError, Tenista>left(new TenistaError.DatabaseError("No se ha guardado tenista en la bd"));
                     }
 
                     // Devolvemos el tenista con el id y las fechas
@@ -107,8 +107,8 @@ public class TenistasRepositoryLocal implements TenistasRepository {
                     return Either.<TenistaError, Tenista>right(tenista);
                 }).subscribeOn(Schedulers.boundedElastic())
                 .onErrorResume(e -> {
-                    logger.error("Error insertando tenista con id", e);
-                    return Mono.just(Either.left(new TenistaError.DatabaseError("Error insertando tenista ->" + e.getMessage())));
+                    //logger.error("Error insertando tenista con id", e);
+                    return Mono.just(Either.left(new TenistaError.DatabaseError("No se ha insertando tenista en la bd ->" + e.getMessage())));
                 });
     }
 
@@ -144,8 +144,8 @@ public class TenistasRepositoryLocal implements TenistasRepository {
                 })
                 .subscribeOn(Schedulers.boundedElastic())
                 .onErrorResume(e -> {
-                    logger.error("Error actualizando tenista con id {}", id, e);
-                    return Mono.just(Either.left(new TenistaError.DatabaseError("Error actualizando tenista con id " + id + "->" + e.getMessage())));
+                    //logger.error("Error actualizando tenista con id {}", id, e);
+                    return Mono.just(Either.left(new TenistaError.DatabaseError("No se ha actualizando tenista en la bd con id " + id + "->" + e.getMessage())));
                 });
     }
 
@@ -160,8 +160,8 @@ public class TenistasRepositoryLocal implements TenistasRepository {
                     return Either.<TenistaError, Long>right(id);
                 }).subscribeOn(Schedulers.boundedElastic())
                 .onErrorResume(e -> {
-                    logger.error("Error borrando tenista con id {}", id, e);
-                    return Mono.just(Either.left(new TenistaError.DatabaseError("Error borrando tenista con id " + id + "->" + e.getMessage())));
+                    //logger.error("Error borrando tenista con id {}", id, e);
+                    return Mono.just(Either.left(new TenistaError.DatabaseError("No se ha borrando tenista en la bd con id " + id + "->" + e.getMessage())));
                 });
     }
 
@@ -172,8 +172,8 @@ public class TenistasRepositoryLocal implements TenistasRepository {
                     return Either.<TenistaError, Void>right(null);
                 }).subscribeOn(Schedulers.boundedElastic())
                 .onErrorResume(e -> {
-                    logger.error("Error borrando todos los tenistas", e);
-                    return Mono.just(Either.left(new TenistaError.DatabaseError("Error borrando todos los tenistas ->" + e.getMessage())));
+                    //logger.error("Error borrando todos los tenistas", e);
+                    return Mono.just(Either.left(new TenistaError.DatabaseError("No se han borrando todos los tenistas de la bd ->" + e.getMessage())));
                 });
     }
 
@@ -203,8 +203,8 @@ public class TenistasRepositoryLocal implements TenistasRepository {
                     return Either.<TenistaError, Integer>right(tenistas.size());
                 }).subscribeOn(Schedulers.boundedElastic())
                 .onErrorResume(e -> {
-                    logger.error("Error insertando tenistas", e);
-                    return Mono.just(Either.left(new TenistaError.DatabaseError("Error insertando tenistas ->" + e.getMessage())));
+                    //logger.error("Error insertando tenistas", e);
+                    return Mono.just(Either.left(new TenistaError.DatabaseError("No se han insertando tenistas en la bd ->" + e.getMessage())));
                 });
     }
 

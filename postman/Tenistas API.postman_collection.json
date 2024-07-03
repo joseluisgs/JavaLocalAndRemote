@@ -1,0 +1,148 @@
+{
+	"info": {
+		"_postman_id": "947d0c29-01b4-435e-9061-851b4c7aae44",
+		"name": "Tenistas API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "11271351"
+	},
+	"item": [
+		{
+			"name": "Get All",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://my-json-server.typicode.com/joseluisgs/KotlinLocalAndRemote/tenistas?_sort=id",
+					"protocol": "https",
+					"host": [
+						"my-json-server",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"joseluisgs",
+						"KotlinLocalAndRemote",
+						"tenistas"
+					],
+					"query": [
+						{
+							"key": "_sort",
+							"value": "id"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get By Id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://my-json-server.typicode.com/joseluisgs/KotlinLocalAndRemote/tenistas/1",
+					"protocol": "https",
+					"host": [
+						"my-json-server",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"joseluisgs",
+						"KotlinLocalAndRemote",
+						"tenistas",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"mano\": \"DIESTRO\",\r\n    \"pais\": \"Serbia\",\r\n    \"peso\": \"77\",\r\n    \"altura\": \"188\",\r\n    \"nombre\": \"Novak Djokovic\",\r\n    \"puntos\": \"12030\",\r\n    \"fecha_nacimiento\": \"1987-05-22\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://my-json-server.typicode.com/joseluisgs/KotlinLocalAndRemote/tenistas",
+					"protocol": "https",
+					"host": [
+						"my-json-server",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"joseluisgs",
+						"KotlinLocalAndRemote",
+						"tenistas"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Put",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"mano\": \"DIESTRO\",\r\n    \"pais\": \"Serbia\",\r\n    \"peso\": \"77\",\r\n    \"altura\": \"188\",\r\n    \"nombre\": \"Novak Djokovic\",\r\n    \"puntos\": \"12030\",\r\n    \"fecha_nacimiento\": \"1987-05-22\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://my-json-server.typicode.com/joseluisgs/KotlinLocalAndRemote//tenistas/1",
+					"protocol": "https",
+					"host": [
+						"my-json-server",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"joseluisgs",
+						"KotlinLocalAndRemote",
+						"",
+						"tenistas",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://my-json-server.typicode.com/joseluisgs/KotlinLocalAndRemote/tenistas/1",
+					"protocol": "https",
+					"host": [
+						"my-json-server",
+						"typicode",
+						"com"
+					],
+					"path": [
+						"joseluisgs",
+						"KotlinLocalAndRemote",
+						"tenistas",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

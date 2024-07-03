@@ -32,7 +32,7 @@ public class TenistasStorageCsv implements TenistasStorage {
                     // Para ello usamos el Scheduler boundedElastic que es un Scheduler que se ajusta a la demanda y es adecuado para operaciones de E/S no bloqueantes.
                 }).subscribeOn(Schedulers.boundedElastic())
                 .onErrorResume(e -> {
-                    logger.error("Error al importar Tenistas de CSV: {}", e.getMessage());
+                    //logger.error("Error al importar Tenistas de CSV: {}", e.getMessage());
                     return Mono.just(Either.left(new TenistaError.StorageError("Error al importar Tenistas de CSV: " + e.getMessage())));
                 });
     }
@@ -68,14 +68,14 @@ public class TenistasStorageCsv implements TenistasStorage {
                                     Files.writeString(f.toPath(), dataLines, StandardOpenOption.APPEND);
                                     return Either.right(data.size());
                                 } catch (IOException e) {
-                                    logger.error("Error al exportar Tenistas a CSV: {}", e.getMessage());
+                                    //logger.error("Error al exportar Tenistas a CSV: {}", e.getMessage());
                                     return Either.left(new TenistaError.StorageError("al exportar Tenistas a CSV: " + e.getMessage()));
                                 }
                             }
                     );
                 }).subscribeOn(Schedulers.boundedElastic())
                 .onErrorResume(e -> {
-                    logger.error("Error al exportar Tenistas a CSV: {}", e.getMessage());
+                    //logger.error("Error al exportar Tenistas a CSV: {}", e.getMessage());
                     return Mono.just(Either.left(new TenistaError.StorageError("Error al exportar Tenistas a CSV: " + e.getMessage())));
                 });
     }
@@ -95,7 +95,7 @@ public class TenistasStorageCsv implements TenistasStorage {
                         .toList() // Collect to List
                 );
             } catch (IOException e) {
-                logger.error("Error al leer el fichero: {}: {}", file.getAbsolutePath(), e.getMessage());
+                //logger.error("Error al leer el fichero: {}: {}", file.getAbsolutePath(), e.getMessage());
                 return Either.left(new TenistaError.StorageError("ERROR al leer el fichero " + file.getAbsolutePath() + ": " + e.getMessage()));
             }
         }

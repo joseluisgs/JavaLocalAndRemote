@@ -5,6 +5,7 @@ import dev.joseluisgs.database.JdbiManager;
 import dev.joseluisgs.database.TenistasDao;
 import dev.joseluisgs.models.Tenista;
 import dev.joseluisgs.repository.TenistasRepositoryLocal;
+import dev.joseluisgs.repository.TenistasRepositoryRemote;
 import dev.joseluisgs.rest.RetrofitClient;
 import dev.joseluisgs.rest.TenistasApiRest;
 import dev.joseluisgs.storage.TenistasStorageJson;
@@ -241,25 +242,117 @@ public class Main {
         lista.forEach(t -> System.out.println(t.getId() + " - " + t.getNombre()));
 
 
-        // Probamos Retrofit
-        TenistasApiRest api = RetrofitClient.getClient(TenistasApiRest.API_TENISTAS_URL).create(TenistasApiRest.class);
+        // Probamos el repositorio remoto
+        TenistasRepositoryRemote remote = new TenistasRepositoryRemote(RetrofitClient.getClient(TenistasApiRest.API_TENISTAS_URL).create(TenistasApiRest.class));
 
-        api.getById(1L).blockOptional()
-                .ifPresentOrElse(
-                        result -> {
-                            System.out.println("Tenista recuperado rest: " + result);
+        // Obtenemos todos
+        var tenistasRemotos = remote.getAll().blockOptional().map(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // Devuelve una lista vacía en caso de error
                         },
-                        () -> System.out.println("No se ha encontrado el tenista")
-                );
+                        right -> {
+                            System.out.println("Tenistas recuperados: " + right.size());
+                            return right; // Devuelve la lista de tenistas en caso de éxito
+                        }
+                )
+        ).orElse(Collections.emptyList()); // En caso de Optional.empty()
 
-        api.getAll().blockOptional()
-                .ifPresentOrElse(
-                        result -> {
-                            System.out.println("Tenistas recuperados rest: " + result.size());
-                            result.forEach(t -> System.out.println(t.id() + " - " + t.nombre()));
+        // Mostrar el id y el tenista
+        tenistasRemotos.forEach(t -> System.out.println(t.getId() + " - " + t.getNombre()));
+
+        // Obtenemos un tenista con id 1
+        remote.getById(1L).blockOptional().ifPresentOrElse(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // No necesita devolver ningún valor en particular
                         },
-                        () -> System.out.println("No se han encontrado tenistas")
-                );
+                        right -> {
+                            System.out.println("Tenista encontrado: " + right);
+                            return null; // No necesita devolver ningún valor en particular
+                        }
+                ),
+                () -> System.out.println("La operación ha devuelto un valor nulo")
+        );
+
+        // Obtenemos un tenista que no existe -1
+        remote.getById(-1L).blockOptional().ifPresentOrElse(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // No necesita devolver ningún valor en particular
+                        },
+                        right -> {
+                            System.out.println("Tenista encontrado: " + right);
+                            return null; // No necesita devolver ningún valor en particular
+                        }
+                ),
+                () -> System.out.println("La operación ha devuelto un valor nulo")
+        );
+
+        // Actualizamos el tenista id 1, con este tenista
+        var tenistaActualizado = tenistas.getFirst().nombre("Test Update").id(1L);
+        remote.update(1L, tenistaActualizado).blockOptional().ifPresentOrElse(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // No necesita devolver ningún valor en particular
+                        },
+                        right -> {
+                            System.out.println("Tenista actualizado: " + right);
+                            return null; // No necesita devolver ningún valor en particular
+                        }
+                ),
+                () -> System.out.println("La operación ha devuelto un valor nulo")
+        );
+
+        // Actualizamos un tenista que no existe
+        remote.update(-1L, tenistaActualizado).blockOptional().ifPresentOrElse(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // No necesita devolver ningún valor en particular
+                        },
+                        right -> {
+                            System.out.println("Tenista actualizado: " + right);
+                            return null; // No necesita devolver ningún valor en particular
+                        }
+                ),
+                () -> System.out.println("La operación ha devuelto un valor nulo")
+        );
+
+        // Eliminamos el tenista id 1
+        remote.delete(1L).blockOptional().ifPresentOrElse(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // No necesita devolver ningún valor en particular
+                        },
+                        right -> {
+                            System.out.println("Tenista eliminado: " + right);
+                            return null; // No necesita devolver ningún valor en particular
+                        }
+                ),
+                () -> System.out.println("La operación ha devuelto un valor nulo")
+        );
+
+        // Eliminamos un tenista que no existe
+        remote.delete(-1L).blockOptional().ifPresentOrElse(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // No necesita devolver ningún valor en particular
+                        },
+                        right -> {
+                            System.out.println("Tenista eliminado: " + right);
+                            return null; // No necesita devolver ningún valor en particular
+                        }
+                ),
+                () -> System.out.println("La operación ha devuelto un valor nulo")
+        );
+
 
         System.out.println("Fin de la ejecución");
         System.exit(0);

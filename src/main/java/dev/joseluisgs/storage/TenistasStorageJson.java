@@ -29,7 +29,7 @@ public class TenistasStorageJson implements TenistasStorage {
                 }).subscribeOn(Schedulers.boundedElastic())
                 // Si hay un error, lo capturamos y devolvemos un error
                 .onErrorResume(e -> {
-                    logger.error("Error al importar Tenistas de JSON: {}", e.getMessage());
+                    //logger.error("Error al importar Tenistas de JSON: {}", e.getMessage());
                     return Mono.just(Either.left(new TenistaError.StorageError("Error al importar Tenistas de JSON: " + e.getMessage())));
                 });
     }
@@ -49,7 +49,7 @@ public class TenistasStorageJson implements TenistasStorage {
                 // Convertimos los DTO a Tenistas y los devolvemos
                 return Either.right(tenistasDto.stream().map(TenistaMapper::toTenista).toList());
             } catch (IOException e) {
-                logger.error("Error al leer el fichero: {}: {}", file.getAbsolutePath(), e.getMessage());
+                //logger.error("Error al leer el fichero: {}: {}", file.getAbsolutePath(), e.getMessage());
                 return Either.left(new TenistaError.StorageError("Error al leer el fichero: " + file.getAbsolutePath() + ": " + e.getMessage()));
             }
         }
@@ -74,14 +74,14 @@ public class TenistasStorageJson implements TenistasStorage {
                                     // Devolvemos el número de elementos exportados
                                     return Either.right(data.size());
                                 } catch (IOException e) {
-                                    logger.error("Error al exportar Tenistas a JSON: {}", e.getMessage());
+                                    //logger.error("Error al exportar Tenistas a JSON: {}", e.getMessage());
                                     return Either.left(new TenistaError.StorageError("Error al exportar Tenistas a JSON: " + e.getMessage()));
                                 }
                             }
                     );
                 }).subscribeOn(Schedulers.boundedElastic())
                 .onErrorResume(e -> {
-                    logger.error("Error al exportar Tenistas a JSON: {}", e.getMessage());
+                    //logger.error("Error al exportar Tenistas a JSON: {}", e.getMessage());
                     return Mono.just(Either.left(new TenistaError.StorageError("Error al exportar Tenistas a JSON: " + e.getMessage())));
                 });
     }
