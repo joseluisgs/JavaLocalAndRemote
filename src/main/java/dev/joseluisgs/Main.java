@@ -5,6 +5,8 @@ import dev.joseluisgs.database.JdbiManager;
 import dev.joseluisgs.database.TenistasDao;
 import dev.joseluisgs.models.Tenista;
 import dev.joseluisgs.repository.TenistasRepositoryLocal;
+import dev.joseluisgs.rest.RetrofitClient;
+import dev.joseluisgs.rest.TenistasApiRest;
 import dev.joseluisgs.storage.TenistasStorageJson;
 
 import java.nio.file.Path;
@@ -239,6 +241,28 @@ public class Main {
         lista.forEach(t -> System.out.println(t.getId() + " - " + t.getNombre()));
 
 
+        // Probamos Retrofit
+        TenistasApiRest api = RetrofitClient.getClient(TenistasApiRest.API_TENISTAS_URL).create(TenistasApiRest.class);
+
+        api.getById(1L).blockOptional()
+                .ifPresentOrElse(
+                        result -> {
+                            System.out.println("Tenista recuperado rest: " + result);
+                        },
+                        () -> System.out.println("No se ha encontrado el tenista")
+                );
+
+        api.getAll().blockOptional()
+                .ifPresentOrElse(
+                        result -> {
+                            System.out.println("Tenistas recuperados rest: " + result.size());
+                            result.forEach(t -> System.out.println(t.id() + " - " + t.nombre()));
+                        },
+                        () -> System.out.println("No se han encontrado tenistas")
+                );
+
+        System.out.println("Fin de la ejecución");
+        System.exit(0);
     }
 
 }

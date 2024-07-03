@@ -100,7 +100,7 @@ class TenistasRepositoryLocalTest {
                 () -> assertTrue(result.isPresent(), "El resultado no debe ser nulo"),
                 () -> assertTrue(result.get().isRight(), "El resultado debe ser correcto"),
                 () -> assertEquals(1, result.get().get().size(), "Debe haber un solo tenista"),
-                () -> assertEquals("Roger Federer", result.get().get().get(0).getNombre(), "El nombre del tenista debe ser Roger Federer")
+                () -> assertEquals("Roger Federer", result.get().get().getFirst().getNombre(), "El nombre del tenista debe ser Roger Federer")
         );
 
         // Verificamos que se ha llamado al método selectAll del dao 1 vez

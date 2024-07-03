@@ -37,9 +37,14 @@ dependencies {
     // JDBI
     implementation("org.jdbi:jdbi3-core:3.45.2") // JDBI Core
     implementation("org.jdbi:jdbi3-sqlobject:3.45.2") // JDBI SQL Object
-    implementation("org.jdbi:jdbi3-sqlite:3.45.2") // JDBI SQLite
+    // implementation("org.jdbi:jdbi3-sqlite:3.45.2") // JDBI SQLite
     // Driver para SQLite
     implementation("org.xerial:sqlite-jdbc:3.46.0.0")
+
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-jackson:2.11.0") // Jackson con Retrofit
+    implementation("com.jakewharton.retrofit:retrofit2-reactor-adapter:2.1.0") // Reactor con Retrofit
 
 
     // Test
