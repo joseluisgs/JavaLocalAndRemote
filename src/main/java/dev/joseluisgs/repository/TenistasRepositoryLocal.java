@@ -16,7 +16,7 @@ import java.util.List;
 
 public class TenistasRepositoryLocal implements TenistasRepository {
     private final Logger logger = LoggerFactory.getLogger(TenistasRepositoryLocal.class);
-    JdbiManager<TenistasDao> db = null;
+    JdbiManager<TenistasDao> db;
 
 
     public TenistasRepositoryLocal(JdbiManager<TenistasDao> jdbiManager) {
@@ -103,9 +103,7 @@ public class TenistasRepositoryLocal implements TenistasRepository {
                     }
 
                     // Devolvemos el tenista con el id y las fechas
-                    tenista.setId(id);
-                    tenista.setCreatedAt(timeStamp);
-                    tenista.setUpdatedAt(timeStamp);
+                    tenista.id(id).createdAt(timeStamp).updatedAt(timeStamp);
                     return Either.<TenistaError, Tenista>right(tenista);
                 }).subscribeOn(Schedulers.boundedElastic())
                 .onErrorResume(e -> {

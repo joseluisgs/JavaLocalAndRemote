@@ -17,6 +17,7 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
 
+
         // Vamos a probar el storage CSV
         ArrayList<Tenista> tenistas = new ArrayList<>();
         var fileImportJson = Path.of("data", "tenistas.json").toFile();
@@ -24,18 +25,19 @@ public class Main {
         storageJson.importFile(fileImportJson)
                 .blockOptional()
                 .ifPresentOrElse(
-                        result -> result.fold(
-                                left -> {
-                                    System.out.println(left.getMessage());
-                                    return null; // No necesita devolver ningún valor en particular
-                                },
-                                right -> {
-                                    int successValue = right.size();
-                                    System.out.println("Tenistas Importados JSON: " + successValue);
-                                    tenistas.addAll(right);
-                                    return null; // No necesita devolver ningún valor en particular
-                                }
-                        ),
+                        result ->
+                                result.fold(
+                                        left -> {
+                                            System.out.println(left.getMessage());
+                                            return null; // No necesita devolver ningún valor en particular
+                                        },
+                                        right -> {
+                                            int successValue = right.size();
+                                            System.out.println("Tenistas Importados JSON: " + successValue);
+                                            tenistas.addAll(right);
+                                            return null; // No necesita devolver ningún valor en particular
+                                        }
+                                ),
                         () -> System.out.println("La operación ha devuelto un valor nulo")
                 );
 
@@ -235,6 +237,7 @@ public class Main {
         System.out.println("Tenistas recuperados: " + lista.size());
         // Mostrar el id y el tenista
         lista.forEach(t -> System.out.println(t.getId() + " - " + t.getNombre()));
+
 
     }
 

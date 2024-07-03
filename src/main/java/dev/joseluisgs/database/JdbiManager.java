@@ -29,7 +29,7 @@ public class JdbiManager<T> {
     }
 
     // Para transacciones con resultado
-    public <R> R inTransaction(TransactionFunction<T, R> transactionFunction) {
+    public <R> R withTransaction(TransactionFunction<T, R> transactionFunction) {
         return jdbi.inTransaction(handle -> {
             T dao = handle.attach(daoClass);
             return transactionFunction.apply(dao);

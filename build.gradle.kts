@@ -1,7 +1,8 @@
 plugins {
     id("java")
-    // Lombock
+    // Lombok
     id("io.freefair.lombok") version "8.6"
+
 
 }
 
@@ -14,7 +15,7 @@ repositories {
 
 dependencies {
     // Logger
-    implementation("ch.qos.logback:logback-classic:1.4.12")
+    implementation("ch.qos.logback:logback-classic:1.4.14")
     implementation("org.slf4j:slf4j-simple:1.7.32")
 
     // Lombok
@@ -48,9 +49,24 @@ dependencies {
     // Mockito para nuestros test con JUnit 5
     testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
     testImplementation("org.mockito:mockito-core:5.12.0")
+
+
 }
 
 tasks.test {
     useJUnitPlatform()
 }
+
+// Hacer un Jar ejecutable
+tasks.jar {
+    manifest {
+        // Clase principal
+        attributes["Main-Class"] = "dev.joseluisgs.MainKt"
+    }
+    // Incluir dependencias
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+    // Excluir duplicados
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 
