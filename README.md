@@ -141,3 +141,20 @@ De esta manera hemos podido separar la lógica de la base de datos de la lógica
 
 Enlace a
 los [commit de la sección](https://github.com/joseluisgs/JavaLocalAndRemote/tree/7739f4fa3b755260afd762996cf2e68ddccdd231).
+
+## Repositorio Remoto
+
+Para la realización del repositorio remoto, hemos usado [Retrofit](https://square.github.io/retrofit/), una librería que
+nos
+permite realizar peticiones a
+una API REST de forma sencilla y eficiente. Además le hemos añadido las opciones para parsear los datos con Jackson y el
+manejo de Mono y Flux.
+
+Para ello, hemos creado una interfaz para definir las operaciones de la API REST y una implementación de un repositorio
+donde
+usando RetroFit realizamos las peticiones a la API REST.
+
+Una de las ventajas de Retrofit es que nos permite definir las operaciones de la API REST de forma sencilla y eficiente
+de manera asíncrona gracias a Project Reactor.
+Enlace a
+los [commit de la sección](https://github.com/joseluisgs/JavaLocalAndRemote/tree/7c3b8a43b1d8dc7dda3be46a11e908f50a174947).
