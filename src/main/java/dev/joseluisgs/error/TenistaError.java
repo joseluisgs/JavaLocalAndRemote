@@ -35,4 +35,10 @@ public abstract class TenistaError {
         }
     }
 
+    public static class ValidationError extends TenistaError {
+        public ValidationError(String message) {
+            super("ERROR: " + message);
+        }
+    }
+
 }
