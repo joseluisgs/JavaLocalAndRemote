@@ -166,3 +166,36 @@ datos de forma sencilla y eficiente.
 
 Enlace a
 los [commit de la sección](https://github.com/joseluisgs/JavaLocalAndRemote/tree/e3a56344d3d2d92ab909a5b8e0e628fe1aea834d).
+
+## Notificaciones
+
+Para la realización del servicio de notificaciones, hemos hecho uso de dos clases de la familia de los Flux de Project
+Reactor que nos
+pueden ayudar a ello:
+
+- `Sinks.Many` de Project Reactor para gestionar las notificaciones. Sinks es una clase que proporciona una manera de
+  crear componentes reactivos que puedan actuar como "agujeros" para recibir eventos y también como "fuentes" para
+  emitir eventos a los suscriptores. En este caso, se utiliza Sinks.Many para crear una canal de comunicación que puede
+  emitir múltiples eventos a múltiples suscriptores.
+- `Flux` para gestionar las notificaciones. Flux es una clase que representa un flujo de datos asíncrono y reactiva que
+  puede emitir cero o más elementos. En este caso, se utiliza Flux para gestionar las notificaciones de forma asíncrona
+  y reactiva.
+
+Al utilizar onBackpressureBuffer, se establece una política de bufferización para manejar la sobrecarga de eventos. Esto
+significa que si hay más eventos entrantes de los que los suscriptores pueden consumir en un momento dado, los eventos
+adicionales se almacenan en un buffer en memoria en lugar de descartarlos directamente. Esto garantiza que los eventos
+no se pierdan y se puedan procesar más tarde cuando los suscriptores estén listos para recibirlos.
+
+El método tryEmitNext(notification) se utiliza para intentar enviar una notificación a los suscriptores. Si los
+suscriptores están listos para procesar la notificación, esta se envía inmediatamente. Por otro lado, si los
+suscriptores no están listos o hay un desbordamiento de buffer, el método puede actuar según la política de backpressure
+especificada, en este caso, probablemente descartando eventos antiguos (onBackpressureDrop) cuando el buffer está lleno.
+
+En resumen, esta implementación con Sinks.Many y Flux en Project Reactor permite la creación de un estado compartido
+para las notificaciones, donde se puede enviar múltiples notificaciones y los suscriptores recibirán y procesarán solo
+la última notificación cuando se suscriban, evitando así la acumulación de notificaciones o la pérdida de eventos. El
+uso de políticas de backpressure como onBackpressureBuffer y onBackpressureDrop ayuda a gestionar de manera eficiente la
+producción y el consumo de eventos en situaciones donde el flujo de eventos puede ser variable o pesado.
+
+Enlace a
+los [commit de la sección](https://github.com/joseluisgs/KotlinLocalAndRemote/tree/a742db9eeec1e5dea2d2c8871efde528510f3af7).
