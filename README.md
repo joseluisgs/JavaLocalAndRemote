@@ -158,3 +158,11 @@ Una de las ventajas de Retrofit es que nos permite definir las operaciones de la
 de manera asíncrona gracias a Project Reactor.
 Enlace a
 los [commit de la sección](https://github.com/joseluisgs/JavaLocalAndRemote/tree/7c3b8a43b1d8dc7dda3be46a11e908f50a174947).
+
+## Validador
+
+Para la realización del validador de datos, hemos usado una clase que nos permite validar los
+datos de forma sencilla y eficiente.
+
+Enlace a
+los [commit de la sección](https://github.com/joseluisgs/JavaLocalAndRemote/tree/e3a56344d3d2d92ab909a5b8e0e628fe1aea834d).
