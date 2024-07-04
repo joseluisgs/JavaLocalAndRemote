@@ -198,4 +198,4 @@ uso de políticas de backpressure como onBackpressureBuffer y onBackpressureDrop
 producción y el consumo de eventos en situaciones donde el flujo de eventos puede ser variable o pesado.
 
 Enlace a
-los [commit de la sección](https://github.com/joseluisgs/KotlinLocalAndRemote/tree/a742db9eeec1e5dea2d2c8871efde528510f3af7).
+los [commit de la sección](https://github.com/joseluisgs/JavaLocalAndRemote/tree/4920a4a69229f1039c2c121b53147c60e70377f5).
