@@ -4,6 +4,8 @@ package dev.joseluisgs;
 import dev.joseluisgs.database.JdbiManager;
 import dev.joseluisgs.database.TenistasDao;
 import dev.joseluisgs.models.Tenista;
+import dev.joseluisgs.notification.Notification;
+import dev.joseluisgs.notification.TenistasNotifications;
 import dev.joseluisgs.repository.TenistasRepositoryLocal;
 import dev.joseluisgs.repository.TenistasRepositoryRemote;
 import dev.joseluisgs.rest.RetrofitClient;
@@ -353,7 +355,34 @@ public class Main {
                 () -> System.out.println("La operación ha devuelto un valor nulo")
         );
 
+        TenistasNotifications tenistasNotifications = new TenistasNotifications();
 
+        // Suscripción a las notificaciones
+        tenistasNotifications.getNotifications().subscribe(notification -> {
+            System.out.println("Nueva notificación recibida: " + notification);
+        });
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Envío de varias notificaciones de ejemplo
+        tenistasNotifications.send(new Notification<>(Notification.Type.CREATE, tenistas.getFirst()));
+        tenistasNotifications.send(new Notification<>(Notification.Type.UPDATE, tenistas.get(1)));
+        tenistasNotifications.send(new Notification<>(Notification.Type.DELETE, tenistas.get(2)));
+        tenistasNotifications.send(new Notification<>(Notification.Type.REFRESH));
+
+        // Pausa para que se puedan procesar las notificaciones
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Cerramos la conexión
         System.out.println("Fin de la ejecución");
         System.exit(0);
     }
