@@ -4,6 +4,7 @@ package dev.joseluisgs;
 import dev.joseluisgs.cache.TenistasCacheImpl;
 import dev.joseluisgs.database.JdbiManager;
 import dev.joseluisgs.database.TenistasDao;
+import dev.joseluisgs.models.Tenista;
 import dev.joseluisgs.notification.TenistasNotifications;
 import dev.joseluisgs.repository.TenistasRepositoryLocal;
 import dev.joseluisgs.repository.TenistasRepositoryRemote;
@@ -15,7 +16,12 @@ import dev.joseluisgs.storage.TenistasStorageJson;
 
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.groupingBy;
 import static reactor.core.scheduler.Schedulers.boundedElastic;
 
 public class Main {
@@ -41,13 +47,12 @@ public class Main {
         var notifications = tenistasService.getNotifications().subscribe(notification -> {
             switch (notification.type()) {
                 case CREATE ->
-                        System.out.println("🟢 Notificación de creación de tenista:: " + notification.message() + " -> " + notification.item());
+                        System.out.println("🟢 Notificación de creación de tenista: " + notification.message() + " -> " + notification.item());
                 case UPDATE ->
-                        System.out.println("🟠 Notificación de actualización de tenista:: " + notification.message() + " -> " + notification.item());
+                        System.out.println("🟠 Notificación de actualización de tenista: " + notification.message() + " -> " + notification.item());
                 case DELETE ->
-                        System.out.println("🔴 Notificación de eliminación de tenista:: " + notification.message() + " -> " + notification.item());
-                case REFRESH ->
-                        System.out.println("🔵 Notificación de refresco de tenistas:: " + notification.message());
+                        System.out.println("🔴 Notificación de eliminación de tenista: " + notification.message() + " -> " + notification.item());
+                case REFRESH -> System.out.println("🔵 Notificación de refresco de tenistas: " + notification.message());
             }
         });
 
@@ -290,6 +295,81 @@ public class Main {
                 )
         );
 
+        // Obtenemos la lista de tenistas
+        var tenistasActuales = tenistasService.getAll(true).blockOptional().map(
+                        result -> result.fold(
+                                left -> {
+                                    System.out.println(left.getMessage());
+                                    return null; // Devuelve una lista vacía en caso de error
+                                },
+                                right -> {
+                                    System.out.println("Tenistas obtenidos: " + right.size());
+                                    System.out.println(right);
+                                    return right; // Devuelve la lista de tenistas en caso de éxito
+                                }
+                        )
+                )
+                .orElse(Collections.emptyList()); // En caso de Optional.empty()
+
+        // Tenistas ordenados con ranking, es decir, por puntos de mayor a menor
+        System.out.println("Tenistas ordenados por ranking:");
+        tenistasActuales.stream()
+                .sorted(Comparator.comparing(Tenista::getPuntos).reversed())
+                .forEach(t -> System.out.printf("Ranking: %d: %s -> %d%n", t.getPuntos(), t.getNombre(), t.getPuntos()));
+
+
+        //  Media de altura de los tenistas
+        var mediaAltura = tenistasActuales.stream().mapToInt(Tenista::getAltura).average().orElse(0.0);
+        System.out.printf("Media de altura de los tenistas: %.2f%n", mediaAltura);
+
+        // Media de peso de los tenistas
+        var mediaPeso = tenistasActuales.stream().mapToInt(Tenista::getPeso).average().orElse(0.0);
+        System.out.printf("Media de peso de los tenistas: %.2f%n", mediaPeso); // Media de peso de los tenistas con 2 decimales
+
+        // Tenista más alto
+        var tenistaMasAlto = tenistasActuales.stream().max(Comparator.comparing(Tenista::getAltura)).orElse(null);
+        System.out.printf("Tenista más alto: " + tenistaMasAlto);
+
+        // Tenistas españoles
+        var tenistasEspanoles = tenistasActuales.stream().filter(t -> t.getPais().equals("España"));
+        System.out.println("Tenistas españoles:" + tenistasEspanoles);
+
+        // Tenistas agrupados por paises
+        System.out.println("Tenistas agrupados por paises:");
+        var tenistasPorPais = tenistasActuales.stream().collect(groupingBy(Tenista::getPais));
+        tenistasPorPais.forEach((pais, lista) -> System.out.println(pais + " -> " + lista));
+
+        // Tenistas agrupados por paises y ordenados por puntos decendentes
+        System.out.println("Tenistas agrupados por paises y ordenados por puntos decendentes:");
+        var tenistasPorPaisOrdenados = tenistasActuales.stream()
+                .collect(Collectors.groupingBy(
+                        Tenista::getPais,
+                        () -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER),
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                tenistasLista -> tenistasLista.stream()
+                                        .sorted(Comparator.comparing(Tenista::getPuntos).reversed())
+                                        .collect(Collectors.toList())
+                        )
+                ));
+
+        tenistasPorPaisOrdenados.forEach((pais, lista) -> System.out.println(pais + " -> " + lista));
+
+        // Puntuación total de los tenistas agrupados por paises
+        System.out.println("Puntuación total de los tenistas agrupados por paises:");
+        var puntuacionTotalPorPais = tenistasActuales.stream()
+                .collect(groupingBy(Tenista::getPais, Collectors.summingInt(Tenista::getPuntos)));
+
+        // País con puntuación total más alta
+        var paisMasPuntos = puntuacionTotalPorPais.entrySet().stream()
+                .max(Comparator.comparingInt(Map.Entry::getValue))
+                .map(e -> e.getKey())
+                .orElse("Desconocido");
+
+        System.out.printf("País con más puntos: %s -> %d%n", paisMasPuntos, puntuacionTotalPorPais.get(paisMasPuntos));
+
+
+        System.out.println("👋👋 Adiós Tenistas! 👋👋");
 
         // Cerramos la conexión
         System.exit(0);
