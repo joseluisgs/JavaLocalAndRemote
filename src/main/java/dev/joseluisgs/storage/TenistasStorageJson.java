@@ -13,9 +13,11 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import javax.inject.Singleton;
 import java.io.*;
 import java.util.List;
 
+@Singleton
 public class TenistasStorageJson implements TenistasStorage {
     private static final Logger logger = LoggerFactory.getLogger(TenistasStorageJson.class);
 

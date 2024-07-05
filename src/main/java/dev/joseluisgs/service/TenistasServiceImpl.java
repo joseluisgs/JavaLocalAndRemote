@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.File;
 import java.time.Duration;
 import java.util.List;
@@ -28,6 +30,8 @@ import static reactor.core.scheduler.Schedulers.boundedElastic;
 // En este caso, estamos usando flatMap porque estamos haciendo operaciones asincronas
 //
 
+@Singleton
+
 public class TenistasServiceImpl implements TenistasService {
     private final Logger logger = LoggerFactory.getLogger(TenistasServiceImpl.class);
 
@@ -38,6 +42,7 @@ public class TenistasServiceImpl implements TenistasService {
     private final TenistasStorageJson jsonStorage;
     private final TenistasNotifications notificationsService;
 
+    @Inject
     public TenistasServiceImpl(TenistasRepositoryLocal localRepository, TenistasRepositoryRemote remoteRepository, TenistasCache cache, TenistasStorageCsv csvStorage, TenistasStorageJson jsonStorage, TenistasNotifications notificationsService) {
         this.localRepository = localRepository;
         this.remoteRepository = remoteRepository;

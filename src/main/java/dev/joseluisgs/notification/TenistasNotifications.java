@@ -7,6 +7,9 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import javax.inject.Singleton;
+
+@Singleton
 public class TenistasNotifications implements Notifications<Tenista> {
 
     private static final Logger logger = LoggerFactory.getLogger(TenistasNotifications.class);

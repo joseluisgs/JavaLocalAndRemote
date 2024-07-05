@@ -46,6 +46,12 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-jackson:2.11.0") // Jackson con Retrofit
     implementation("com.jakewharton.retrofit:retrofit2-reactor-adapter:2.1.0") // Reactor con Retrofit
 
+    // Dagger
+    implementation("com.google.dagger:dagger:2.51.1") // Verifica la última versión en https://mvnrepository.com/artifact/com.google.dagger/dagger
+    annotationProcessor("com.google.dagger:dagger-compiler:2.51.1")
+    testImplementation("com.google.dagger:dagger:2.51.1")
+    testAnnotationProcessor("com.google.dagger:dagger-compiler:2.51.1")
+
 
     // Test
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
@@ -73,5 +79,3 @@ tasks.jar {
     // Excluir duplicados
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
-
-

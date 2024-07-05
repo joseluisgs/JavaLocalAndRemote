@@ -11,9 +11,11 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import javax.inject.Singleton;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Singleton
 public class TenistasRepositoryLocal implements TenistasRepository {
     private final Logger logger = LoggerFactory.getLogger(TenistasRepositoryLocal.class);
     JdbiManager<TenistasDao> db;
@@ -101,7 +103,7 @@ public class TenistasRepositoryLocal implements TenistasRepository {
                     if (id == null) {
                         return Either.<TenistaError, Tenista>left(new TenistaError.DatabaseError("No se ha guardado tenista en la bd"));
                     }
-                    
+
                     // Devolvemos el tenista con el id y las fechas
                     tenista.id(id).createdAt(timeStamp).updatedAt(timeStamp);
                     return Either.<TenistaError, Tenista>right(tenista);

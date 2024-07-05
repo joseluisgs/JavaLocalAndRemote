@@ -10,9 +10,11 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import javax.inject.Singleton;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Singleton
 public class TenistasRepositoryRemote implements TenistasRepository {
     private final Logger logger = LoggerFactory.getLogger(TenistasRepositoryRemote.class);
     private final TenistasApiRest restClient;

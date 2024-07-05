@@ -1,18 +1,9 @@
 package dev.joseluisgs;
 
 
-import dev.joseluisgs.cache.TenistasCacheImpl;
-import dev.joseluisgs.database.JdbiManager;
-import dev.joseluisgs.database.TenistasDao;
+import dev.joseluisgs.di.DaggerAppComponent;
 import dev.joseluisgs.models.Tenista;
-import dev.joseluisgs.notification.TenistasNotifications;
-import dev.joseluisgs.repository.TenistasRepositoryLocal;
-import dev.joseluisgs.repository.TenistasRepositoryRemote;
-import dev.joseluisgs.rest.RetrofitClient;
-import dev.joseluisgs.rest.TenistasApiRest;
 import dev.joseluisgs.service.TenistasServiceImpl;
-import dev.joseluisgs.storage.TenistasStorageCsv;
-import dev.joseluisgs.storage.TenistasStorageJson;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -33,14 +24,16 @@ public class Main {
         System.out.println("🎾🎾 Hola Tenistas! 🎾🎾");
 
         // Creamos el servicio
-        TenistasServiceImpl tenistasService = new TenistasServiceImpl(
+        /*TenistasServiceImpl tenistasService = new TenistasServiceImpl(
                 new TenistasRepositoryLocal(new JdbiManager<>("tenistas.db", TenistasDao.class)),
                 new TenistasRepositoryRemote(RetrofitClient.getClient(TenistasApiRest.API_TENISTAS_URL).create(TenistasApiRest.class)),
                 new TenistasCacheImpl(5),
                 new TenistasStorageCsv(),
                 new TenistasStorageJson(),
                 new TenistasNotifications()
-        );
+        );*/
+
+        TenistasServiceImpl tenistasService = DaggerAppComponent.create().getTenistasService();
 
         // Recogemos las notificaciones
         System.out.println("🔊 Escuchando notificaciones de tenistas 🔊");

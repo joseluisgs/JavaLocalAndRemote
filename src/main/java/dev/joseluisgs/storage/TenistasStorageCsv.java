@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -19,6 +20,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Singleton
 public class TenistasStorageCsv implements TenistasStorage {
     private static final Logger logger = LoggerFactory.getLogger(TenistasStorageCsv.class);
 
