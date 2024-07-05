@@ -49,7 +49,7 @@ public class TenistasServiceImpl implements TenistasService {
         logger.debug("Obteniendo todos los tenistas");
 
         if (!fromRemote) {
-            return localRepository.getAll();
+            return localRepository.getAll().subscribeOn(boundedElastic());
 
         } else {
             // remoteRepository.getAll() devuelve un Mono<List<Tenista>>
@@ -58,15 +58,74 @@ public class TenistasServiceImpl implements TenistasService {
             return remoteRepository.getAll()
                     .flatMap(remoteTenistas -> localRepository.saveAll(remoteTenistas.get())
                             .then(localRepository.getAll())
-                            .doOnNext(tenistas -> cache.clear()));
+                            .doOnNext(tenistas -> cache.clear()))
+                    .subscribeOn(boundedElastic());
         }
     }
 
 
     @Override
     public Mono<Either<TenistaError, Tenista>> getById(long id) {
-        return null;
+        logger.debug("Obteniendo tenista por id: {}", id);
+
+        // Primero buscamos en la cache, si está, lo devolvemos
+        Tenista cachedTenista = cache.get(id);
+        if (cachedTenista != null) {
+            logger.debug("Tenista encontrado en cache");
+            return Mono.just(Either.right(cachedTenista));
+        }
+        /*
+        // Estamos haciendo uso de codigo bloqueante, mejor dejar esto para el main, que recoge las cosas
+        // Si no está en la cache, buscamos en el repositorio local y metemos en la cache
+        var localTenista = localRepository.getById(id).block();
+        if (localTenista != null && localTenista.isRight()) {
+
+            cache.put(id, localTenista.get());
+            return Mono.just(localTenista);
+        }
+
+        // Si no está en el repositorio local, buscamos en el repositorio remotoy metemos en local y cache
+       var remoteTenista = remoteRepository.getById(id)
+                .subscribeOn(boundedElastic())
+                .block();
+        if (remoteTenista != null && remoteTenista.isRight()) {
+            localRepository.save(remoteTenista.get())
+                    .subscribeOn(boundedElastic())
+                    .blockOptional()
+                    .ifPresent(tenista -> cache.put(id, tenista.get()));
+            return Mono.just(remoteTenista);
+        }
+
+        // Si no está en el repositorio remoto, devolvemos un error
+        return Mono.just(Either.left(new TenistaError.NotFound(id)));
+        */
+
+        // Sin codigo bloqueante
+
+        return localRepository.getById(id).subscribeOn(boundedElastic())
+                .flatMap(resultLocal -> {
+                    if (resultLocal.isRight()) {
+                        cache.put(id, resultLocal.get());
+                        logger.debug("Tenista encontrado en repositorio local");
+                        return Mono.just(resultLocal);
+                    }
+                    // Buscamos en el repositorio remoto
+                    return remoteRepository.getById(id).subscribeOn(boundedElastic())
+                            .flatMap(resultRemote -> {
+                                if (resultRemote.isRight()) {
+                                    logger.debug("Tenista encontrado en repositorio remoto");
+                                    return localRepository.save(resultRemote.get())
+                                            .subscribeOn(boundedElastic())
+                                            .doOnNext(saved -> cache.put(id, saved.get()))
+                                            .thenReturn(resultRemote);
+                                }
+                                // Si no encontramos el tenista, devolvemos un error
+                                return Mono.just(Either.left(new TenistaError.NotFound(id)));
+                            });
+                });
+
     }
+
 
     @Override
     public Mono<Either<TenistaError, Tenista>> save(Tenista tenista) {

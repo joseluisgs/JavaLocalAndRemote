@@ -15,6 +15,8 @@ import dev.joseluisgs.storage.TenistasStorageJson;
 
 import java.util.Collections;
 
+import static reactor.core.scheduler.Schedulers.boundedElastic;
+
 public class Main {
     // Vamos a probar jdbi en sqlite memoria
 
@@ -55,7 +57,7 @@ public class Main {
         }
 
         // Obtenemos todos los tenistas
-        var tenistas = tenistasService.getAll(false).blockOptional().map(
+        var tenistas = tenistasService.getAll(false).subscribeOn(boundedElastic()).blockOptional().map(
                         result -> result.fold(
                                 left -> {
                                     System.out.println(left.getMessage());
@@ -69,6 +71,34 @@ public class Main {
                         )
                 )
                 .orElse(Collections.emptyList()); // En caso de Optional.empty()
+
+        // Obtenemos un tenista que existe
+        tenistasService.getById(1L).subscribeOn(boundedElastic()).blockOptional().ifPresent(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // No necesita devolver ningún valor en particular
+                        },
+                        right -> {
+                            System.out.println("Tenista encontrado: " + right);
+                            return null; // No necesita devolver ningún valor en particular
+                        }
+                )
+        );
+
+        // Obtenemos un tenista que no existe
+        tenistasService.getById(-1L).subscribeOn(boundedElastic()).blockOptional().ifPresent(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // No necesita devolver ningún valor en particular
+                        },
+                        right -> {
+                            System.out.println("Tenista encontrado: " + right);
+                            return null; // No necesita devolver ningún valor en particular
+                        }
+                )
+        );
 
         /*
         // Vamos a probar el storage CSV
