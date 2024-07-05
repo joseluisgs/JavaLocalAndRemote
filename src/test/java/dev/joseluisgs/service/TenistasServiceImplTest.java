@@ -1,6 +1,7 @@
 package dev.joseluisgs.service;
 
 import dev.joseluisgs.cache.TenistasCache;
+import dev.joseluisgs.error.TenistaError;
 import dev.joseluisgs.models.Tenista;
 import dev.joseluisgs.notification.TenistasNotifications;
 import dev.joseluisgs.repository.TenistasRepositoryLocal;
@@ -151,5 +152,181 @@ class TenistasServiceImplTest {
         verify(cache, times(1)).put(tenistaTest.getId(), tenistaTest);
 
     }
+
+    @Test
+    @DisplayName("Obtener tenista por ID no existente en cache ni en local ni en remoto")
+    void obtenerTenistaPorIdNoExistente() {
+        when(cache.get(tenistaTest.getId())).thenReturn(null);
+        when(localRepository.getById(tenistaTest.getId())).thenReturn(Mono.just(Either.left(null)));
+        when(remoteRepository.getById(tenistaTest.getId())).thenReturn(Mono.just(Either.left(new TenistaError.NotFound(tenistaTest.getId()))));
+
+        var resultado = service.getById(tenistaTest.getId()).blockOptional();
+
+        assertAll("Verificación de obtener tenista por ID",
+                () -> assertTrue(resultado.isPresent(), "Se se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isLeft(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals("ERROR: No se ha encontrado el tenista con id: 1", resultado.get().getLeft().getMessage(), "El mensaje de error es correcto")
+        );
+
+        verify(cache, times(1)).get(tenistaTest.getId());
+        verify(localRepository, times(1)).getById(tenistaTest.getId());
+        verify(remoteRepository, times(1)).getById(tenistaTest.getId());
+        verify(localRepository, times(0)).save(tenistaTest);
+        verify(cache, times(0)).put(tenistaTest.getId(), tenistaTest);
+    }
+
+    @Test
+    @DisplayName("Guardar tenista correctamente")
+    void guardarTenistaCorrectamente() {
+        when(remoteRepository.save(tenistaTest)).thenReturn(Mono.just(Either.right(tenistaTest)));
+        when(localRepository.save(tenistaTest)).thenReturn(Mono.just(Either.right(tenistaTest)));
+        doNothing().when(cache).put(tenistaTest.getId(), tenistaTest);
+
+        var resultado = service.save(tenistaTest).blockOptional();
+
+        assertAll("Verificación de guardar tenista",
+                () -> assertTrue(resultado.isPresent(), "Se se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isRight(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals(tenistaTest, resultado.get().get(), "El tenista guardado es correcto")
+        );
+
+        verify(localRepository, times(1)).save(tenistaTest);
+        verify(remoteRepository, times(1)).save(tenistaTest);
+        verify(cache, times(1)).put(tenistaTest.getId(), tenistaTest);
+    }
+
+    @Test
+    @DisplayName("Guardar tenista con error de validación")
+    void guardarTenistaCorrectamenteConErrorDeValidacion() {
+        var newTenista = Tenista.builder()
+                .id(1L)
+                .nombre("Roger Federer")
+                .pais("Suiza")
+                .altura(185)
+                .peso(85)
+                .puntos(-10)
+                .mano(Tenista.Mano.DIESTRO)
+                .fechaNacimiento(LocalDate.of(1981, 8, 8))
+                .build();
+
+        var resultado = service.save(newTenista).blockOptional();
+
+        assertAll("Verificación de guardar tenista",
+                () -> assertTrue(resultado.isPresent(), "Se se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isLeft(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals("ERROR: Los puntos del tenista no pueden ser nulos o menores a 0", resultado.get().getLeft().getMessage(), "El mensaje de error es correcto")
+        );
+
+        verify(localRepository, times(0)).save(tenistaTest);
+        verify(remoteRepository, times(0)).save(tenistaTest);
+        verify(cache, times(0)).put(tenistaTest.getId(), tenistaTest);
+    }
+
+    @Test
+    @DisplayName("Guardar tenista debe retornar error si no se puede guardar remotamente")
+    void guardarTenistaConErrorEnRemoto() {
+        when(remoteRepository.save(tenistaTest)).thenReturn(Mono.just(Either.left(new TenistaError.RemoteError("Error al guardar en remoto"))));
+
+        var resultado = service.save(tenistaTest).blockOptional();
+
+        assertAll("Verificación de guardar tenista",
+                () -> assertTrue(resultado.isPresent(), "Se se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isLeft(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals("ERROR: Error al guardar en remoto", resultado.get().getLeft().getMessage(), "El mensaje de error es correcto")
+        );
+
+        verify(localRepository, times(0)).save(tenistaTest);
+        verify(remoteRepository, times(1)).save(tenistaTest);
+        verify(cache, times(0)).put(tenistaTest.getId(), tenistaTest);
+    }
+
+    @Test
+    @DisplayName("Actualizar tenista debe retornar tenista actualizado")
+    void actualizarTenistaCorrectamente() {
+        when(cache.get(tenistaTest.getId())).thenReturn(tenistaTest);
+        when(remoteRepository.update(tenistaTest.getId(), tenistaTest)).thenReturn(Mono.just(Either.right(tenistaTest)));
+        when(localRepository.update(tenistaTest.getId(), tenistaTest)).thenReturn(Mono.just(Either.right(tenistaTest)));
+        doNothing().when(cache).put(tenistaTest.getId(), tenistaTest);
+
+        var resultado = service.update(tenistaTest.getId(), tenistaTest).blockOptional();
+
+        assertAll("Verificación de actualizar tenista",
+                () -> assertTrue(resultado.isPresent(), "Se se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isRight(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals(tenistaTest, resultado.get().get(), "El tenista actualizado es correcto")
+        );
+
+        verify(localRepository, times(1)).update(tenistaTest.getId(), tenistaTest);
+        verify(remoteRepository, times(1)).update(tenistaTest.getId(), tenistaTest);
+        verify(cache, times(1)).put(tenistaTest.getId(), tenistaTest);
+    }
+
+    @Test
+    @DisplayName("Actualizar tenista debe retornar error si no se puede actualizar por validación")
+    void actualizarTenistaConErrorDeValidacion() {
+        var newTenista = Tenista.builder()
+                .id(1L)
+                .nombre("Roger Federer")
+                .pais("Suiza")
+                .altura(185)
+                .peso(85)
+                .puntos(-10)
+                .mano(Tenista.Mano.DIESTRO)
+                .fechaNacimiento(LocalDate.of(1981, 8, 8))
+                .build();
+
+        var resultado = service.update(newTenista.getId(), newTenista).blockOptional();
+
+        assertAll("Verificación de actualizar tenista",
+                () -> assertTrue(resultado.isPresent(), "Se se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isLeft(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals("ERROR: Los puntos del tenista no pueden ser nulos o menores a 0", resultado.get().getLeft().getMessage(), "El mensaje de error es correcto")
+        );
+
+        verify(localRepository, times(0)).update(tenistaTest.getId(), tenistaTest);
+        verify(remoteRepository, times(0)).update(tenistaTest.getId(), tenistaTest);
+        verify(cache, times(0)).put(tenistaTest.getId(), tenistaTest);
+    }
+
+    @Test
+    @DisplayName("Actualizar tenista debe retornar error si no se puede actualizar remotamente")
+    void actualizarTenistaConErrorEnRemoto() {
+        when(cache.get(tenistaTest.getId())).thenReturn(tenistaTest);
+        when(remoteRepository.update(tenistaTest.getId(), tenistaTest)).thenReturn(Mono.just(Either.left(new TenistaError.RemoteError("Error al actualizar en remoto"))));
+
+        var resultado = service.update(tenistaTest.getId(), tenistaTest).blockOptional();
+
+        assertAll("Verificación de actualizar tenista",
+                () -> assertTrue(resultado.isPresent(), "Se se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isLeft(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals("ERROR: Error al actualizar en remoto", resultado.get().getLeft().getMessage(), "El mensaje de error es correcto")
+        );
+
+        verify(localRepository, times(0)).update(tenistaTest.getId(), tenistaTest);
+        verify(remoteRepository, times(1)).update(tenistaTest.getId(), tenistaTest);
+        verify(cache, times(0)).put(tenistaTest.getId(), tenistaTest);
+    }
+
+    @Test
+    @DisplayName("Actualizar tenista debe retornar error porque el tenista no existe remotamente")
+    void actualizarTenistaNoExistenteEnRemoto() {
+        when(cache.get(tenistaTest.getId())).thenReturn(tenistaTest);
+        when(remoteRepository.update(tenistaTest.getId(), tenistaTest)).thenReturn(Mono.just(Either.left(new TenistaError.NotFound(tenistaTest.getId()))));
+
+        var resultado = service.update(tenistaTest.getId(), tenistaTest).blockOptional();
+
+        assertAll("Verificación de actualizar tenista",
+                () -> assertTrue(resultado.isPresent(), "Se se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isLeft(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals("ERROR: No se ha encontrado el tenista con id: 1", resultado.get().getLeft().getMessage(), "El mensaje de error es correcto")
+        );
+
+        verify(localRepository, times(0)).update(tenistaTest.getId(), tenistaTest);
+        verify(remoteRepository, times(1)).update(tenistaTest.getId(), tenistaTest);
+        verify(cache, times(0)).put(tenistaTest.getId(), tenistaTest);
+    }
+
+    @Test
+    @DisplayName("Borrar tenista debe retornar tenista borrado")
 
 }

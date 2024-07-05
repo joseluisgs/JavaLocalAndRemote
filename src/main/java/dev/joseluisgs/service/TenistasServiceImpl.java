@@ -116,19 +116,25 @@ public class TenistasServiceImpl implements TenistasService {
         // Primero validamos el tenista
         var validation = TenistaValidator.validate(tenista);
         if (validation.isLeft()) {
+            logger.debug("Error validando tenista: {}", validation.getLeft());
             return Mono.just(Either.left(validation.getLeft()));
         }
 
         // Salvamos en remoto y luego en local y metemos en cache
-        return remoteRepository.save(tenista).subscribeOn(boundedElastic()) // Salvamos en remoto
-                .then(localRepository.save(tenista)) // y entonces en local
-                .doOnNext(saved -> { // Si se ha salvado correctamente, lo metemos en la cache y notificamos
-                    cache.put(saved.get().getId(), saved.get());
-                    notificationsService.send(new Notification<>(
-                            Notification.Type.CREATE,
-                            saved.get(),
-                            "Nuevo tenista creado: " + saved.get()));
-                });
+        return remoteRepository.save(tenista).subscribeOn(boundedElastic()).flatMap(resultRemote -> {
+            if (resultRemote.isRight()) { // Si se ha guardado correctamente en remoto
+                logger.debug("Tenista guardado remotamente: {}", resultRemote.get());
+                return localRepository.save(resultRemote.get()).subscribeOn(boundedElastic()) // Guardamos en local
+                        .doOnNext(saved -> { // Si se ha guardado correctamente, lo guardamos en la cache y notificamos
+                            cache.put(saved.get().getId(), saved.get());
+                            notificationsService.send(new Notification<>(
+                                    Notification.Type.CREATE,
+                                    saved.get(),
+                                    "Tenista creado: " + saved.get()));
+                        });
+            }
+            return Mono.just(resultRemote); // Devolvemos el resultado
+        });
 
     }
 
@@ -146,15 +152,20 @@ public class TenistasServiceImpl implements TenistasService {
         return this.getById(id).subscribeOn(boundedElastic()).flatMap(result -> {
             if (result.isRight()) {
                 logger.debug("Tenista encontrado remotamente: {}", result.get());
-                return remoteRepository.update(id, tenista) // Actualizamos en remoto
-                        .then(localRepository.update(id, tenista)) // y entonces en local
-                        .doOnNext(updated -> { // Si se ha actualizado correctamente, lo actualizamos en la cache y notificamos
-                            cache.put(updated.get().getId(), updated.get());
-                            notificationsService.send(new Notification<>(
-                                    Notification.Type.UPDATE,
-                                    updated.get(),
-                                    "Tenista actualizado: " + updated.get()));
-                        });
+                return remoteRepository.update(id, tenista).subscribeOn(boundedElastic()).flatMap(resultRemote -> {
+                    if (resultRemote.isRight()) {
+                        logger.debug("Tenista actualizado remotamente: {}", resultRemote.get());
+                        return localRepository.update(id, resultRemote.get()).subscribeOn(boundedElastic()) // Actualizamos en local
+                                .doOnNext(updated -> { // Si se ha actualizado correctamente, lo actualizamos en la cache y notificamos
+                                    cache.put(updated.get().getId(), updated.get());
+                                    notificationsService.send(new Notification<>(
+                                            Notification.Type.UPDATE,
+                                            updated.get(),
+                                            "Tenista actualizado: " + updated.get()));
+                                });
+                    }
+                    return Mono.just(resultRemote); // Devolvemos el error que ya viene del getById, si no podemos actualizarlo
+                });
             }
             return Mono.just(result); // Devolvemos el error que ya viene del getById, si no podemos crealo
         });
