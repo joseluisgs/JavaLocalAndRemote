@@ -232,7 +232,10 @@ Para la inyección de dependencias hemos usado [Dagger](https://dagger.dev/), un
 dependencias de forma sencilla y eficiente. Nos permite definir los módulos y las dependencias existentes, ya sea manual
 o con anotaciones.
 Además, nos permite inyectar propiedades desde un archivo de propiedades.
-Finalmente nos permite poder testear nuestros módulos.
+
+Hay que tener en cuenta que Dagger se resuleve en tiempo de compilación, por lo que se debe hacer un rebuild del
+proyecto
+para que se apliquen los cambios y se generen las clases necesarias.
 
 Enlace a
-los [commit de la sección](https://github.com/joseluisgs/KotlinLocalAndRemote/tree/3fe6a52f4645714b717ad2739c69a2d7a21cb90e).
+los [commit de la sección](https://github.com/joseluisgs/JavaLocalAndRemote/tree/ab6bea2d607d637566a7f3e59ef16cdc61482e6b).
