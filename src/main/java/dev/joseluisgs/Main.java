@@ -1,20 +1,17 @@
 package dev.joseluisgs;
 
 
+import dev.joseluisgs.cache.TenistasCacheImpl;
 import dev.joseluisgs.database.JdbiManager;
 import dev.joseluisgs.database.TenistasDao;
-import dev.joseluisgs.models.Tenista;
-import dev.joseluisgs.notification.Notification;
 import dev.joseluisgs.notification.TenistasNotifications;
 import dev.joseluisgs.repository.TenistasRepositoryLocal;
 import dev.joseluisgs.repository.TenistasRepositoryRemote;
 import dev.joseluisgs.rest.RetrofitClient;
 import dev.joseluisgs.rest.TenistasApiRest;
+import dev.joseluisgs.service.TenistasServiceImpl;
+import dev.joseluisgs.storage.TenistasStorageCsv;
 import dev.joseluisgs.storage.TenistasStorageJson;
-
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
 
 public class Main {
     // Vamos a probar jdbi en sqlite memoria
@@ -22,7 +19,40 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
 
+        // Creamos el servicio
+        TenistasServiceImpl tenistasService = new TenistasServiceImpl(
+                new TenistasRepositoryLocal(new JdbiManager<>("tenistas.db", TenistasDao.class)),
+                new TenistasRepositoryRemote(RetrofitClient.getClient(TenistasApiRest.API_TENISTAS_URL).create(TenistasApiRest.class)),
+                new TenistasCacheImpl(5),
+                new TenistasStorageCsv(),
+                new TenistasStorageJson(),
+                new TenistasNotifications()
+        );
 
+        // Recogemos las notificaciones
+        tenistasService.getNotifications().subscribe(notification -> {
+            switch (notification.type()) {
+                case CREATE ->
+                        System.out.println("🟢 Notificación de creación de tenista:: " + notification.message() + " -> " + notification.item());
+                case UPDATE ->
+                        System.out.println("🟠 Notificación de actualización de tenista:: " + notification.message() + " -> " + notification.item());
+                case DELETE ->
+                        System.out.println("🔴 Notificación de eliminación de tenista:: " + notification.message() + " -> " + notification.item());
+                case REFRESH ->
+                        System.out.println("🔵 Notificación de refresco de tenistas:: " + notification.message());
+            }
+        });
+
+        tenistasService.refresh();
+
+        // Esperamos un poco
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        /*
         // Vamos a probar el storage CSV
         ArrayList<Tenista> tenistas = new ArrayList<>();
         var fileImportJson = Path.of("data", "tenistas.json").toFile();
@@ -375,6 +405,9 @@ public class Main {
         tenistasNotifications.send(new Notification<>(Notification.Type.REFRESH));
 
         // Pausa para que se puedan procesar las notificaciones
+
+
+         */
 
         try {
             Thread.sleep(1000);
