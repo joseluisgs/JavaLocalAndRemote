@@ -57,7 +57,7 @@ public class Main {
         }
 
         // Obtenemos todos los tenistas
-        var tenistas = tenistasService.getAll(false).subscribeOn(boundedElastic()).blockOptional().map(
+        var tenistas = tenistasService.getAll(false).blockOptional().map(
                         result -> result.fold(
                                 left -> {
                                     System.out.println(left.getMessage());
@@ -73,7 +73,7 @@ public class Main {
                 .orElse(Collections.emptyList()); // En caso de Optional.empty()
 
         // Obtenemos un tenista que existe
-        tenistasService.getById(1L).subscribeOn(boundedElastic()).blockOptional().ifPresent(
+        tenistasService.getById(1L).blockOptional().ifPresent(
                 result -> result.fold(
                         left -> {
                             System.out.println(left.getMessage());
@@ -87,7 +87,7 @@ public class Main {
         );
 
         // Obtenemos un tenista que no existe
-        tenistasService.getById(-1L).subscribeOn(boundedElastic()).blockOptional().ifPresent(
+        tenistasService.getById(-1L).blockOptional().ifPresent(
                 result -> result.fold(
                         left -> {
                             System.out.println(left.getMessage());
@@ -99,6 +99,125 @@ public class Main {
                         }
                 )
         );
+
+        // Guardamos un tenista
+        var tenista = tenistas.getFirst().nombre("Test Insert");
+        tenistasService.save(tenista).subscribeOn(boundedElastic()).blockOptional().ifPresent(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // No necesita devolver ningún valor en particular
+                        },
+                        right -> {
+                            System.out.println("Tenista guardado: " + right);
+                            return null; // No necesita devolver ningún valor en particular
+                        }
+                )
+        );
+
+        // Obtenemos todos los tenistas
+        tenistasService.getAll(false).blockOptional().map(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // Devuelve una lista vacía en caso de error
+                        },
+                        right -> {
+                            System.out.println("Tenistas recuperados: " + right.size());
+                            System.out.println(right);
+                            return right; // Devuelve la lista de tenistas en caso de éxito
+                        }
+                )
+        );
+
+        // Actualizamos un tenista
+        var tenistaUpdate = tenistas.getFirst().nombre("Test Update").id(1L);
+        tenistasService.update(1L, tenistaUpdate).subscribeOn(boundedElastic()).blockOptional().ifPresent(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // No necesita devolver ningún valor en particular
+                        },
+                        right -> {
+                            System.out.println("Tenista actualizado: " + right);
+                            return null; // No necesita devolver ningún valor en particular
+                        }
+                )
+        );
+
+        // Obtenemos todos los tenistas
+        tenistasService.getAll(false).blockOptional().map(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // Devuelve una lista vacía en caso de error
+                        },
+                        right -> {
+                            System.out.println("Tenistas recuperados: " + right.size());
+                            System.out.println(right);
+                            return right; // Devuelve la lista de tenistas en caso de éxito
+                        }
+                )
+        );
+
+        // Actualizamos un tenista que no existe
+        tenistasService.update(-1L, tenistaUpdate).subscribeOn(boundedElastic()).blockOptional().ifPresent(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // No necesita devolver ningún valor en particular
+                        },
+                        right -> {
+                            System.out.println("Tenista actualizado: " + right);
+                            return null; // No necesita devolver ningún valor en particular
+                        }
+                )
+        );
+
+        // Eliminamos un tenista
+        tenistasService.delete(1L).subscribeOn(boundedElastic()).blockOptional().ifPresent(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // No necesita devolver ningún valor en particular
+                        },
+                        right -> {
+                            System.out.println("Tenista eliminado: " + right);
+                            return null; // No necesita devolver ningún valor en particular
+                        }
+                )
+        );
+
+        // Obtenemos todos los tenistas
+        tenistasService.getAll(false).blockOptional().map(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // Devuelve una lista vacía en caso de error
+                        },
+                        right -> {
+                            System.out.println("Tenistas recuperados: " + right.size());
+                            System.out.println(right);
+                            return right; // Devuelve la lista de tenistas en caso de éxito
+                        }
+                )
+        );
+
+        // Eliminamos un tenista que no existe
+        tenistasService.delete(-1L).subscribeOn(boundedElastic()).blockOptional().ifPresent(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // No necesita devolver ningún valor en particular
+                        },
+                        right -> {
+                            System.out.println("Tenista eliminado: " + right);
+                            return null; // No necesita devolver ningún valor en particular
+                        }
+                )
+        );
+
+
 
         /*
         // Vamos a probar el storage CSV

@@ -9,6 +9,7 @@ import dev.joseluisgs.repository.TenistasRepositoryLocal;
 import dev.joseluisgs.repository.TenistasRepositoryRemote;
 import dev.joseluisgs.storage.TenistasStorageCsv;
 import dev.joseluisgs.storage.TenistasStorageJson;
+import dev.joseluisgs.validator.TenistaValidator;
 import io.vavr.control.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,11 @@ import java.time.Duration;
 import java.util.List;
 
 import static reactor.core.scheduler.Schedulers.boundedElastic;
+
+// Que quede claro
+// map es sincrono, flatMap es asincrono, por eso para operaciones asincronas usamos flatMap
+// En este caso, estamos usando flatMap porque estamos haciendo operaciones asincronas
+//
 
 public class TenistasServiceImpl implements TenistasService {
     private final Logger logger = LoggerFactory.getLogger(TenistasServiceImpl.class);
@@ -55,11 +61,10 @@ public class TenistasServiceImpl implements TenistasService {
             // remoteRepository.getAll() devuelve un Mono<List<Tenista>>
             // Luego de obtener los datos remotos, los guardamos en el repositorio local
             // Y devolvemos los datos locales
-            return remoteRepository.getAll()
+            return remoteRepository.getAll().subscribeOn(boundedElastic())
                     .flatMap(remoteTenistas -> localRepository.saveAll(remoteTenistas.get())
                             .then(localRepository.getAll())
-                            .doOnNext(tenistas -> cache.clear()))
-                    .subscribeOn(boundedElastic());
+                            .doOnNext(tenistas -> cache.clear()));
         }
     }
 
@@ -129,17 +134,91 @@ public class TenistasServiceImpl implements TenistasService {
 
     @Override
     public Mono<Either<TenistaError, Tenista>> save(Tenista tenista) {
-        return null;
+        logger.debug("Guardando tenista: {}", tenista);
+
+        // Primero validamos el tenista
+        var validation = TenistaValidator.validate(tenista);
+        if (validation.isLeft()) {
+            return Mono.just(Either.left(validation.getLeft()));
+        }
+
+        // Salvamos en remoto y luego en local y metemos en cache
+        return remoteRepository.save(tenista).subscribeOn(boundedElastic()).flatMap(result -> {
+            if (result.isRight()) {
+                // Salvamos en local
+                return localRepository.save(result.get())
+                        .doOnNext(saved -> {
+                            cache.put(saved.get().getId(), saved.get());
+                            notificationsService.send(new Notification<>(
+                                    Notification.Type.CREATE,
+                                    saved.get(),
+                                    "Nuevo tenista creado: " + saved.get()));
+                        });
+            }
+            return Mono.just(result);
+        });
+
+
     }
 
     @Override
     public Mono<Either<TenistaError, Tenista>> update(long id, Tenista tenista) {
-        return null;
+        logger.debug("Actualizando tenista: {}", tenista);
+
+        // Primero validamos el tenista
+        var validation = TenistaValidator.validate(tenista);
+        if (validation.isLeft()) {
+            return Mono.just(Either.left(validation.getLeft()));
+        }
+        // Primero ejecutamos this.getById(id) para obtener el tenista actual
+        // Luego actualizamos el tenista en remoto y luego en local y metemos en cache
+        return this.getById(id).subscribeOn(boundedElastic()).flatMap(result -> {
+            if (result.isRight()) {
+                logger.debug("Tenista encontrado remotamente: {}", result.get());
+                return remoteRepository.update(id, tenista)
+                        .flatMap(resultUpdate -> {
+                            if (resultUpdate.isRight()) {
+                                logger.debug("Tenista actualizado remotamente: {}", resultUpdate.get());
+                                return localRepository.update(id, resultUpdate.get())
+                                        .doOnNext(updated -> {
+                                            logger.debug("Tenista actualizado localmente: {}", updated.get());
+                                            cache.put(updated.get().getId(), updated.get());
+                                            notificationsService.send(new Notification<>(
+                                                    Notification.Type.UPDATE,
+                                                    updated.get(),
+                                                    "Tenista actualizado: " + updated.get()));
+                                        });
+                            }
+                            return Mono.just(resultUpdate); // es lo que viene del remote
+                        });
+            }
+            return Mono.just(result); // Devolvemos el error que ya viene del getById, si no podemos crealo
+        });
     }
 
     @Override
     public Mono<Either<TenistaError, Long>> delete(long id) {
-        return null;
+        logger.debug("Borrando tenista con id: {}", id);
+        // Primero ejecutamos this.getById(id) para obtener el tenista actual
+        return this.getById(id).subscribeOn(boundedElastic())
+                .flatMap(result -> {
+                    if (result.isRight()) {
+                        logger.debug("Tenista encontrado remotamente: {}", result.get());
+                        // eliminamos de remoto
+                        return remoteRepository.delete(id).subscribeOn(boundedElastic())
+                                .then(localRepository.delete(id))
+                                .doOnNext(deleted -> {
+                                    logger.debug("Tenista eliminado remotamente y localmente: {}", deleted.get());
+                                    cache.remove(id);
+                                    notificationsService.send(new Notification<>(
+                                            Notification.Type.DELETE,
+                                            result.get(),
+                                            "Tenista eliminado: " + result.get()));
+                                });
+                    } else {
+                        return Mono.just(Either.left(result.getLeft()));
+                    }
+                });
     }
 
     @Override
@@ -172,7 +251,7 @@ public class TenistasServiceImpl implements TenistasService {
     @Override
     public void loadData() {
         logger.debug("Refrescando el repositorio local con los datos remotos");
-        localRepository.removeAll()
+        localRepository.removeAll().subscribeOn(boundedElastic())
                 .then(remoteRepository.getAll())
                 .flatMap(remoteTenistas -> localRepository.saveAll(remoteTenistas.get())
                         .doOnNext(savedTenistas -> {
@@ -180,7 +259,10 @@ public class TenistasServiceImpl implements TenistasService {
                                     Notification.Type.REFRESH,
                                     null,
                                     "Nuevos datos disponibles: " + savedTenistas.get()));
-                            cache.clear();
-                        })).subscribe();
+                            cache.clear(); // Limpiamos la cache
+                        })).subscribe(
+                        next -> logger.debug("Datos refrescados"),
+                        error -> logger.error("Error refrescando los datos", error)
+                );
     }
 }

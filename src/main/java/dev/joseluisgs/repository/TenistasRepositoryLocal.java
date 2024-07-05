@@ -101,7 +101,7 @@ public class TenistasRepositoryLocal implements TenistasRepository {
                     if (id == null) {
                         return Either.<TenistaError, Tenista>left(new TenistaError.DatabaseError("No se ha guardado tenista en la bd"));
                     }
-
+                    
                     // Devolvemos el tenista con el id y las fechas
                     tenista.id(id).createdAt(timeStamp).updatedAt(timeStamp);
                     return Either.<TenistaError, Tenista>right(tenista);
