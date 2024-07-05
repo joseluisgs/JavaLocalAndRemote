@@ -328,5 +328,62 @@ class TenistasServiceImplTest {
 
     @Test
     @DisplayName("Borrar tenista debe retornar tenista borrado")
+    void borrarTenistaCorrectamente() {
+        when(cache.get(tenistaTest.getId())).thenReturn(tenistaTest);
+        when(remoteRepository.delete(tenistaTest.getId())).thenReturn(Mono.just(Either.right(tenistaTest.getId())));
+        when(localRepository.delete(tenistaTest.getId())).thenReturn(Mono.just(Either.right(tenistaTest.getId())));
+        doNothing().when(cache).remove(tenistaTest.getId());
+
+        var resultado = service.delete(tenistaTest.getId()).blockOptional();
+
+        assertAll("Verificación de borrar tenista",
+                () -> assertTrue(resultado.isPresent(), "Se se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isRight(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals(tenistaTest.getId(), resultado.get().get(), "El tenista borrado es correcto")
+        );
+
+        verify(localRepository, times(1)).delete(tenistaTest.getId());
+        verify(remoteRepository, times(1)).delete(tenistaTest.getId());
+        verify(cache, times(1)).remove(tenistaTest.getId());
+    }
+
+    @Test
+    @DisplayName("Borrar tenista debe retornar error si no se puede borrar remotamente")
+    void borrarTenistaConErrorEnRemoto() {
+        when(cache.get(tenistaTest.getId())).thenReturn(tenistaTest);
+        when(remoteRepository.delete(tenistaTest.getId())).thenReturn(Mono.just(Either.left(new TenistaError.RemoteError("Error al borrar en remoto"))));
+
+        var resultado = service.delete(tenistaTest.getId()).blockOptional();
+
+        assertAll("Verificación de borrar tenista",
+                () -> assertTrue(resultado.isPresent(), "Se se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isLeft(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals("ERROR: Error al borrar en remoto", resultado.get().getLeft().getMessage(), "El mensaje de error es correcto")
+        );
+
+        verify(localRepository, times(0)).delete(tenistaTest.getId());
+        verify(remoteRepository, times(1)).delete(tenistaTest.getId());
+        verify(cache, times(0)).remove(tenistaTest.getId());
+    }
+
+    @Test
+    @DisplayName("Borrar tenista debe retornar error si no se puede borrar remotamente")
+    void borrarTenistaNoExistenteEnRemoto() {
+        when(cache.get(tenistaTest.getId())).thenReturn(tenistaTest);
+        when(remoteRepository.delete(tenistaTest.getId())).thenReturn(Mono.just(Either.left(new TenistaError.NotFound(tenistaTest.getId()))));
+
+        var resultado = service.delete(tenistaTest.getId()).blockOptional();
+
+        assertAll("Verificación de borrar tenista",
+                () -> assertTrue(resultado.isPresent(), "Se se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isLeft(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals("ERROR: No se ha encontrado el tenista con id: 1", resultado.get().getLeft().getMessage(), "El mensaje de error es correcto")
+        );
+
+        verify(localRepository, times(0)).delete(tenistaTest.getId());
+        verify(remoteRepository, times(1)).delete(tenistaTest.getId());
+        verify(cache, times(0)).remove(tenistaTest.getId());
+    }
+    
 
 }

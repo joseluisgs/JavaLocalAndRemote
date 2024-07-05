@@ -147,8 +147,9 @@ public class TenistasServiceImpl implements TenistasService {
         if (validation.isLeft()) {
             return Mono.just(Either.left(validation.getLeft()));
         }
-        // Primero ejecutamos this.getById(id) para obtener el tenista actual y si es correcto
-        // Luego actualizamos el tenista en remoto y luego en local y metemos en cache
+        // Primero ejecutamos this.getById(id) para obtener el tenista actual
+        // No es necesario validar si existe, ya que si no existe, devolverá un error el remoto
+        // pero lo dejo para que cojáis soltura con el código y con el flujo
         return this.getById(id).subscribeOn(boundedElastic()).flatMap(result -> {
             if (result.isRight()) {
                 logger.debug("Tenista encontrado remotamente: {}", result.get());
@@ -175,23 +176,30 @@ public class TenistasServiceImpl implements TenistasService {
     public Mono<Either<TenistaError, Long>> delete(long id) {
         logger.debug("Borrando tenista con id: {}", id);
         // Primero ejecutamos this.getById(id) para obtener el tenista actual
+        // No es necesario validar si existe, ya que si no existe, devolverá un error el remoto
+        // pero lo dejo para que cojáis soltura con el código y con el flujo
         return this.getById(id).subscribeOn(boundedElastic()).flatMap(result -> {
             if (result.isRight()) {
                 logger.debug("Tenista encontrado remotamente: {}", result.get());
                 // eliminamos de remoto
-                return remoteRepository.delete(id).subscribeOn(boundedElastic()) // Eliminamos en remoto
-                        .then(localRepository.delete(id)) // y entonces en local
-                        .doOnNext(deleted -> { // Si se ha eliminado correctamente, lo eliminamos de la cache y notificamos
-                            logger.debug("Tenista eliminado remotamente y localmente: {}", deleted.get());
-                            cache.remove(id);
-                            notificationsService.send(new Notification<>(
-                                    Notification.Type.DELETE,
-                                    result.get(),
-                                    "Tenista eliminado: " + result.get()));
+                return remoteRepository.delete(id).subscribeOn(boundedElastic()).flatMap(
+                        resultRemote -> {
+                            if (resultRemote.isRight()) {
+                                logger.debug("Tenista eliminado remotamente: {}", resultRemote.get());
+                                // eliminamos de local
+                                return localRepository.delete(id).subscribeOn(boundedElastic())
+                                        .doOnNext(deleted -> {
+                                            cache.remove(id);
+                                            notificationsService.send(new Notification<>(
+                                                    Notification.Type.DELETE,
+                                                    result.get(),
+                                                    "Tenista eliminado: " + result.get()));
+                                        });
+                            }
+                            return Mono.just(resultRemote); // Devolvemos el error que ya viene del getById, si no podemos eliminarlo
                         });
             }
             return Mono.just(Either.left(result.getLeft()));
-
         });
     }
 
