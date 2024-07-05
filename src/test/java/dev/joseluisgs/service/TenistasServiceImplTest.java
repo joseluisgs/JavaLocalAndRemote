@@ -16,7 +16,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
+import java.io.File;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -384,6 +387,216 @@ class TenistasServiceImplTest {
         verify(remoteRepository, times(1)).delete(tenistaTest.getId());
         verify(cache, times(0)).remove(tenistaTest.getId());
     }
-    
+
+    @Test
+    @DisplayName("Importar debe devolver Ok para fichero CSV")
+    void importarFicheroCSV() {
+        var file = new File("test.csv");
+
+        when(csvStorage.importFile(file)).thenReturn(Mono.just(Either.right(List.of(tenistaTest))));
+        when(localRepository.removeAll()).thenReturn(Mono.just(Either.right(null)));
+        when(remoteRepository.save(tenistaTest)).thenReturn(Mono.just(Either.right(tenistaTest)));
+        when(localRepository.save(tenistaTest)).thenReturn(Mono.just(Either.right(tenistaTest)));
+
+        var resultado = service.importData(file).blockOptional();
+
+        assertAll("Verificación de importar fichero CSV",
+                () -> assertTrue(resultado.isPresent(), "Se se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isRight(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals(1, resultado.get().get(), "El número de tenistas importados es correcto")
+        );
+
+        verify(csvStorage, times(1)).importFile(file);
+        verify(localRepository, times(1)).removeAll();
+        verify(remoteRepository, times(1)).save(tenistaTest);
+        verify(localRepository, times(1)).save(tenistaTest);
+    }
+
+    @Test
+    @DisplayName("Importar debe devolver Ok para fichero JSON")
+    void importarFicheroJSON() {
+        var file = new File("test.json");
+
+        when(jsonStorage.importFile(file)).thenReturn(Mono.just(Either.right(List.of(tenistaTest))));
+        when(localRepository.removeAll()).thenReturn(Mono.just(Either.right(null)));
+        when(remoteRepository.save(tenistaTest)).thenReturn(Mono.just(Either.right(tenistaTest)));
+        when(localRepository.save(tenistaTest)).thenReturn(Mono.just(Either.right(tenistaTest)));
+
+        var resultado = service.importData(file).blockOptional();
+
+        assertAll("Verificación de importar fichero JSON",
+                () -> assertTrue(resultado.isPresent(), "Se se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isRight(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals(1, resultado.get().get(), "El número de tenistas importados es correcto")
+        );
+
+        verify(jsonStorage, times(1)).importFile(file);
+        verify(localRepository, times(1)).removeAll();
+        verify(remoteRepository, times(1)).save(tenistaTest);
+        verify(localRepository, times(1)).save(tenistaTest);
+    }
+
+    @Test
+    @DisplayName("Importar debe devolver error si no importar")
+    void importarFicheroError() {
+        var file = new File("test.json");
+
+        when(jsonStorage.importFile(file)).thenReturn(Mono.just(Either.left(new TenistaError.StorageError("Error al importar"))));
+
+        var resultado = service.importData(file).blockOptional();
+
+        assertAll("Verificación de importar fichero JSON",
+                () -> assertTrue(resultado.isPresent(), "Se se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isLeft(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals("ERROR: Error al importar", resultado.get().getLeft().getMessage(), "El mensaje de error es correcto")
+        );
+
+        verify(jsonStorage, times(1)).importFile(file);
+        verify(localRepository, times(0)).removeAll();
+        verify(remoteRepository, times(0)).save(tenistaTest);
+        verify(localRepository, times(0)).save(tenistaTest);
+    }
+
+    @Test
+    @DisplayName("Exportar debe devolver Ok para fichero CSV de manera local")
+    void exportarFicheroCSVLocal() {
+        var file = new File("test.csv");
+
+        when(localRepository.getAll()).thenReturn(Mono.just(Either.right(List.of(tenistaTest))));
+        when(csvStorage.exportFile(file, List.of(tenistaTest))).thenReturn(Mono.just(Either.right(1)));
+
+        var resultado = service.exportData(file, false).blockOptional();
+
+        assertAll("Verificación de exportar fichero CSV",
+                () -> assertTrue(resultado.isPresent(), "Se se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isRight(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals(1, resultado.get().get(), "El fichero exportado es correcto")
+        );
+
+        verify(localRepository, times(1)).getAll();
+        verify(csvStorage, times(1)).exportFile(file, List.of(tenistaTest));
+    }
+
+    @Test
+    @DisplayName("Exportar debe devolver Ok para fichero CSV de manera remota")
+    void exportarFicheroCSVRemoto() {
+        var file = new File("test.csv");
+
+        when(remoteRepository.getAll()).thenReturn(Mono.just(Either.right(List.of(tenistaTest))));
+        when(csvStorage.exportFile(file, List.of(tenistaTest))).thenReturn(Mono.just(Either.right(1)));
+
+        var resultado = service.exportData(file, true).blockOptional();
+
+        assertAll("Verificación de exportar fichero CSV",
+                () -> assertTrue(resultado.isPresent(), "Se se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isRight(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals(1, resultado.get().get(), "El fichero exportado es correcto")
+        );
+
+        verify(remoteRepository, times(1)).getAll();
+        verify(csvStorage, times(1)).exportFile(file, List.of(tenistaTest));
+    }
+
+    @Test
+    @DisplayName("Exportar debe devolver Ok para fichero Json de manera local")
+    void exportarFicheroJSONLocal() {
+        var file = new File("test.json");
+
+        when(localRepository.getAll()).thenReturn(Mono.just(Either.right(List.of(tenistaTest))));
+        when(jsonStorage.exportFile(file, List.of(tenistaTest))).thenReturn(Mono.just(Either.right(1)));
+
+        var resultado = service.exportData(file, false).blockOptional();
+
+        assertAll("Verificación de exportar fichero JSON",
+                () -> assertTrue(resultado.isPresent(), "Se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isRight(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals(1, resultado.get().get(), "El fichero exportado es correcto")
+        );
+
+        verify(localRepository, times(1)).getAll();
+        verify(jsonStorage, times(1)).exportFile(file, List.of(tenistaTest));
+    }
+
+    @Test
+    @DisplayName("Exportar debe devolver Ok para fichero Json de manera remota")
+    void exportarFicheroJSONRemoto() {
+        var file = new File("test.json");
+
+        when(remoteRepository.getAll()).thenReturn(Mono.just(Either.right(List.of(tenistaTest))));
+        when(jsonStorage.exportFile(file, List.of(tenistaTest))).thenReturn(Mono.just(Either.right(1)));
+
+        var resultado = service.exportData(file, true).blockOptional();
+
+        assertAll("Verificación de exportar fichero JSON",
+                () -> assertTrue(resultado.isPresent(), "Se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isRight(), "Se ha obtenido resultado correcto"),
+                () -> assertEquals(1, resultado.get().get(), "El fichero exportado es correcto")
+        );
+
+        verify(remoteRepository, times(1)).getAll();
+        verify(jsonStorage, times(1)).exportFile(file, List.of(tenistaTest));
+    }
+
+    @Test
+    @DisplayName("Exportar debe devolver error si no se puede exportar")
+    void exportarFicheroError() {
+        var file = new File("test.json");
+
+        // Mocks
+        when(localRepository.getAll()).thenReturn(Mono.just(Either.right(List.of(tenistaTest))));
+        when(jsonStorage.exportFile(file, List.of(tenistaTest))).thenReturn(Mono.just(Either.left(new TenistaError.StorageError("Error al exportar"))));
+
+        // Llamada al servicio
+        var resultado = service.exportData(file, false).blockOptional();
+
+        // Aserciones
+        assertAll("Verificación de exportar fichero JSON",
+                () -> assertTrue(resultado.isPresent(), "Se ha obtenido resultado"),
+                () -> assertTrue(resultado.get().isLeft(), "Se ha obtenido un error en la exportación"),
+                () -> assertEquals("ERROR: Error al exportar", resultado.get().getLeft().getMessage(), "El mensaje de error es correcto")
+        );
+
+        // Verificaciones de interacciones con los mocks
+        verify(localRepository, times(1)).getAll();
+        verify(jsonStorage, times(1)).exportFile(file, List.of(tenistaTest));
+    }
+
+    @Test
+    @DisplayName("Load data debe cargar los datos")
+    void loadData() {
+        when(localRepository.removeAll()).thenReturn(Mono.just(Either.right(null)));
+        when(remoteRepository.getAll()).thenReturn(Mono.just(Either.right(List.of(tenistaTest))));
+        when(localRepository.saveAll(List.of(tenistaTest))).thenReturn(Mono.just(Either.right(1)));
+
+        service.loadData();
+
+        verify(localRepository, times(1)).removeAll();
+        verify(remoteRepository, times(1)).getAll();
+        verify(localRepository, times(1)).saveAll(List.of(tenistaTest));
+    }
+
+    @Test
+    @DisplayName("Refresh debe actualizar los datos")
+    void refresh() {
+
+        when(localRepository.removeAll()).thenReturn(Mono.just(Either.right(null)));
+        when(remoteRepository.getAll()).thenReturn(Mono.just(Either.right(List.of(tenistaTest))));
+        when(localRepository.saveAll(any())).thenReturn(Mono.just(Either.right(1)));
+
+        // El método a testear
+        service.refresh();
+
+        // Esperar a que se complete la operación asincrónica, por eso se usa StepVerifier
+        StepVerifier.create(Mono.fromRunnable(() -> {
+                }))
+                .thenAwait(Duration.ofMillis(100)) // Adjust this timing as necessary
+                .verifyComplete();
+
+        // Verify interactions
+        verify(localRepository, times(1)).removeAll();
+        verify(remoteRepository, times(1)).getAll();
+        verify(localRepository, times(1)).saveAll(List.of(tenistaTest));
+    }
+
 
 }

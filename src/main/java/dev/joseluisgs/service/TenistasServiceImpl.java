@@ -240,7 +240,8 @@ public class TenistasServiceImpl implements TenistasService {
         localRepository.removeAll().subscribeOn(boundedElastic())
                 // lanzamos un flujo de tenistas y los guardamos
                 .thenMany(Flux.fromIterable(tenistas))
-                .flatMap(localRepository::save)
+                .flatMap(remoteRepository::save)
+                .flatMap(remoteTenista -> localRepository.save(remoteTenista.get()))
                 .doOnNext(saved -> {
                     contador.incrementAndGet();
                     cache.put(saved.get().getId(), saved.get());
@@ -345,4 +346,5 @@ public class TenistasServiceImpl implements TenistasService {
                         error -> logger.error("Error refrescando los datos", error)
                 );
     }
+
 }
