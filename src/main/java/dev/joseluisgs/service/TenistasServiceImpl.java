@@ -19,6 +19,7 @@ import reactor.core.publisher.Mono;
 import java.io.File;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static reactor.core.scheduler.Schedulers.boundedElastic;
 
@@ -223,12 +224,107 @@ public class TenistasServiceImpl implements TenistasService {
 
     @Override
     public Mono<Either<TenistaError, Integer>> importData(File file) {
-        return null;
+        logger.debug("Importando datos desde el fichero: {}", file.getName());
+        return switch (file.getName().substring(file.getName().lastIndexOf(".") + 1).toLowerCase()) {
+            case "csv" -> this.importDataCsv(file);
+            case "json" -> this.importDataJson(file);
+            default -> Mono.just(Either.left(new TenistaError.StorageError("Formato de fichero no soportado")));
+        };
+    }
+
+    private Mono<Either<TenistaError, Integer>> importDataJson(File file) {
+        logger.debug("Importando datos desde el fichero JSON: {}", file.getName());
+        return jsonStorage.importFile(file).subscribeOn(boundedElastic()).flatMap(result -> {
+            if (result.isRight()) {
+                return Mono.just(saveAll(result.get()));
+            }
+            return Mono.just(Either.left(result.getLeft()));
+        });
+    }
+
+    private Mono<Either<TenistaError, Integer>> importDataCsv(File file) {
+        logger.debug("Importando datos desde el fichero CSV: {}", file.getName());
+        return csvStorage.importFile(file).subscribeOn(boundedElastic()).flatMap(result -> {
+            if (result.isRight()) {
+                return Mono.just(saveAll(result.get()));
+            }
+            return Mono.just(Either.left(result.getLeft()));
+        });
+
+    }
+
+    private Either<TenistaError, Integer> saveAll(List<Tenista> tenistas) {
+        logger.debug("Guardando tenistas: {}", tenistas);
+        AtomicInteger contador = new AtomicInteger(); // Para contar los tenistas guardados atómicamente
+        localRepository.removeAll().subscribeOn(boundedElastic())
+                // lanzamos un flujo de tenistas y los guardamos
+                .thenMany(Flux.fromIterable(tenistas))
+                .flatMap(localRepository::save)
+                .doOnNext(saved -> {
+                    contador.incrementAndGet();
+                    cache.put(saved.get().getId(), saved.get());
+                }).blockLast(); // Bloqueamos para esperar a que se guarden todos los tenistas, es el único bloqueante
+        return Either.right(contador.get());
     }
 
     @Override
-    public Mono<Either<TenistaError, Integer>> export(File file, boolean fromRemote) {
-        return null;
+    public Mono<Either<TenistaError, Integer>> exportData(File file, boolean fromRemote) {
+        logger.debug("Exportando datos al fichero: {}", file.getName());
+        return switch (file.getName().substring(file.getName().lastIndexOf(".") + 1).toLowerCase()) {
+            case "csv" -> this.exportDataCsv(file, fromRemote);
+            case "json" -> this.exportDataJson(file, fromRemote);
+            default -> Mono.just(Either.left(new TenistaError.StorageError("Formato de fichero no soportado")));
+        };
+    }
+
+    private Mono<Either<TenistaError, Integer>> exportDataCsv(File file, boolean fromRemote) {
+        logger.debug("Exportando datos al fichero CSV: {}", file.getName());
+        if (fromRemote) {
+            return remoteRepository.getAll().subscribeOn(boundedElastic())
+                    .flatMap(remoteTenistas -> csvStorage.exportFile(file, remoteTenistas.get()))
+                    // Devolvemos el número de tenistas exportados o el error mapeado
+                    .map(result -> {
+                        if (result.isRight()) {
+                            return Either.right(result.get());
+                        }
+                        return Either.left(result.getLeft());
+                    });
+        } else {
+            return localRepository.getAll().subscribeOn(boundedElastic())
+                    .flatMap(localTenistas -> csvStorage.exportFile(file, localTenistas.get()))
+                    // Devolvemos el número de tenistas exportados o el error mapeado
+                    .map(result -> {
+                        if (result.isRight()) {
+                            return Either.right(result.get());
+                        }
+                        return Either.left(result.getLeft());
+                    });
+        }
+    }
+
+    private Mono<Either<TenistaError, Integer>> exportDataJson(File file, boolean fromRemote) {
+        logger.debug("Exportando datos al fichero JSON: {}", file.getName());
+        if (fromRemote) {
+            return remoteRepository.getAll().subscribeOn(boundedElastic())
+                    .flatMap(remoteTenistas -> jsonStorage.exportFile(file, remoteTenistas.get()))
+                    // Devolvemos el número de tenistas exportados o el error mapeado
+                    .map(result -> {
+                        if (result.isRight()) {
+                            return Either.right(result.get());
+                        }
+                        return Either.left(result.getLeft());
+                    });
+        } else {
+            return localRepository.getAll().subscribeOn(boundedElastic())
+                    .flatMap(localTenistas -> jsonStorage.exportFile(file, localTenistas.get()))
+                    // Devolvemos el número de tenistas exportados o el error mapeado
+                    .map(result -> {
+                        if (result.isRight()) {
+                            return Either.right(result.get());
+                        }
+                        return Either.left(result.getLeft());
+                    });
+        }
     }
 
     @Override

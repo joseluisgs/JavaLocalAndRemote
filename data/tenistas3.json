@@ -1,0 +1,202 @@
+[
+  {
+    "id": 51,
+    "nombre": "Tommy Paul",
+    "pais": "Estados Unidos",
+    "altura": 185,
+    "peso": 78,
+    "puntos": 1100,
+    "mano": "DIESTRO",
+    "fecha_nacimiento": "1997-05-17"
+  },
+  {
+    "id": 52,
+    "nombre": "Cameron Norrie",
+    "pais": "Reino Unido",
+    "altura": 188,
+    "peso": 82,
+    "puntos": 1150,
+    "mano": "ZURDO",
+    "fecha_nacimiento": "1995-08-23"
+  },
+  {
+    "id": 53,
+    "nombre": "Albert Montañés",
+    "pais": "España",
+    "altura": 175,
+    "peso": 70,
+    "puntos": 1200,
+    "mano": "DIESTRO",
+    "fecha_nacimiento": "1980-11-26"
+  },
+  {
+    "id": 54,
+    "nombre": "Vasek Pospisil",
+    "pais": "Canadá",
+    "altura": 193,
+    "peso": 89,
+    "puntos": 1250,
+    "mano": "DIESTRO",
+    "fecha_nacimiento": "1990-06-23"
+  },
+  {
+    "id": 55,
+    "nombre": "Lloyd Harris",
+    "pais": "Sudáfrica",
+    "altura": 193,
+    "peso": 80,
+    "puntos": 1300,
+    "mano": "DIESTRO",
+    "fecha_nacimiento": "1997-02-24"
+  },
+  {
+    "id": 56,
+    "nombre": "Kwon Soon-woo",
+    "pais": "Corea del Sur",
+    "altura": 180,
+    "peso": 76,
+    "puntos": 1350,
+    "mano": "DIESTRO",
+    "fecha_nacimiento": "1997-12-02"
+  },
+  {
+    "id": 57,
+    "nombre": "Ilya Ivashka",
+    "pais": "Bielorrusia",
+    "altura": 193,
+    "peso": 85,
+    "puntos": 1400,
+    "mano": "DIESTRO",
+    "fecha_nacimiento": "1994-02-24"
+  },
+  {
+    "id": 58,
+    "nombre": "Pedro Martínez",
+    "pais": "España",
+    "altura": 185,
+    "peso": 78,
+    "puntos": 1450,
+    "mano": "DIESTRO",
+    "fecha_nacimiento": "1997-04-26"
+  },
+  {
+    "id": 59,
+    "nombre": "Brandon Nakashima",
+    "pais": "Estados Unidos",
+    "altura": 188,
+    "peso": 84,
+    "puntos": 1500,
+    "mano": "DIESTRO",
+    "fecha_nacimiento": "2001-08-03"
+  },
+  {
+    "id": 60,
+    "nombre": "Mackenzie McDonald",
+    "pais": "Estados Unidos",
+    "altura": 178,
+    "peso": 73,
+    "puntos": 1550,
+    "mano": "DIESTRO",
+    "fecha_nacimiento": "1995-04-16"
+  },
+  {
+    "id": 61,
+    "nombre": "Alexei Popyrin",
+    "pais": "Australia",
+    "altura": 196,
+    "peso": 81,
+    "puntos": 1600,
+    "mano": "DIESTRO",
+    "fecha_nacimiento": "1999-08-05"
+  },
+  {
+    "id": 62,
+    "nombre": "Radu Albot",
+    "pais": "Moldavia",
+    "altura": 175,
+    "peso": 69,
+    "puntos": 1650,
+    "mano": "DIESTRO",
+    "fecha_nacimiento": "1989-11-11"
+  },
+  {
+    "id": 63,
+    "nombre": "Yoshihito Nishioka",
+    "pais": "Japón",
+    "altura": 170,
+    "peso": 64,
+    "puntos": 1700,
+    "mano": "ZURDO",
+    "fecha_nacimiento": "1995-09-27"
+  },
+  {
+    "id": 64,
+    "nombre": "Corentin Moutet",
+    "pais": "Francia",
+    "altura": 175,
+    "peso": 70,
+    "puntos": 1750,
+    "mano": "ZURDO",
+    "fecha_nacimiento": "1999-04-19"
+  },
+  {
+    "id": 65,
+    "nombre": "Henri Laaksonen",
+    "pais": "Suiza",
+    "altura": 185,
+    "peso": 76,
+    "puntos": 1800,
+    "mano": "DIESTRO",
+    "fecha_nacimiento": "1992-03-31"
+  },
+  {
+    "id": 66,
+    "nombre": "Dominik Koepfer",
+    "pais": "Alemania",
+    "altura": 180,
+    "peso": 75,
+    "puntos": 1850,
+    "mano": "ZURDO",
+    "fecha_nacimiento": "1994-04-29"
+  },
+  {
+    "id": 67,
+    "nombre": "Emil Ruusuvuori",
+    "pais": "Finlandia",
+    "altura": 191,
+    "peso": 80,
+    "puntos": 1900,
+    "mano": "DIESTRO",
+    "fecha_nacimiento": "1999-04-02"
+  },
+  {
+    "id": 68,
+    "nombre": "Thiago Monteiro",
+    "pais": "Brasil",
+    "altura": 183,
+    "peso": 78,
+    "puntos": 1050,
+    "mano": "ZURDO",
+    "fecha_nacimiento": "1994-05-31"
+  },
+  {
+    "id": 69,
+    "nombre": "Jaume Munar",
+    "pais": "España",
+    "altura": 183,
+    "peso": 77,
+    "puntos": 1950,
+    "mano": "DIESTRO",
+    "fecha_nacimiento": "1997-05-05"
+  },
+  {
+    "id": 70,
+    "nombre": "Miomir Kecmanovic",
+    "pais": "Serbia",
+    "altura": 183,
+    "peso": 78,
+    "puntos": 2000,
+    "mano": "DIESTRO",
+    "fecha_nacimiento": "1999-08-31"
+  }
+]

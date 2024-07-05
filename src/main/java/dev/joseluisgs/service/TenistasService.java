@@ -23,7 +23,7 @@ public interface TenistasService {
 
     Mono<Either<TenistaError, Integer>> importData(File file);
 
-    Mono<Either<TenistaError, Integer>> export(File file, boolean fromRemote);
+    Mono<Either<TenistaError, Integer>> exportData(File file, boolean fromRemote);
 
     void refresh();
 
