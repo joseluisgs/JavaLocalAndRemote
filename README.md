@@ -199,3 +199,29 @@ producción y el consumo de eventos en situaciones donde el flujo de eventos pue
 
 Enlace a
 los [commit de la sección](https://github.com/joseluisgs/JavaLocalAndRemote/tree/4920a4a69229f1039c2c121b53147c60e70377f5).
+
+## Servicio
+
+El siguiente paso es crear un servicio que encapsule los repositorios local y remoto y la caché en memoria. Para ello,
+crearemos una interfaz `Service` que definirá las operaciones de lectura y escritura de datos.
+
+De esta manera, podremos utilizar el servicio en nuestra aplicación para almacenar y recuperar los datos de forma
+sencilla y eficiente.
+
+Enlace a
+los [commit de la sección](https://github.com/joseluisgs/JavaLocalAndRemote/tree/a302db698e5939955418267707e9533498ee424f).
+
+## Tests
+
+A la hora de realizar los tests, hemos usado [Mockito](https://site.mockito.org/) para simular los objetos y las
+operaciones de
+forma sencilla y eficiente. Nos permite crear mocks de forma sencilla.
+De esta manera, hemos podido realizar los tests creando los dobles de las dependencias y simulando las operaciones
+necesarias.
+
+Para el testeo de Flux y Mono hemos usado en el caso que sea
+necesario [StepVerifier](https://github.com/joseluisgs/JavaLocalAndRemote/tree/0e010f1c452492e1bbd902aa22bf2353e4c1e41d),
+puedes verlo en el método `refresh()`del servicio.
+
+Enlace a
+los [commit de la sección](https://github.com/joseluisgs/KotlinLocalAndRemote/tree/1512d25e017d8c6e5a0224641ade634efe1411b4).
