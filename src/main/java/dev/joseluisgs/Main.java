@@ -13,6 +13,8 @@ import dev.joseluisgs.service.TenistasServiceImpl;
 import dev.joseluisgs.storage.TenistasStorageCsv;
 import dev.joseluisgs.storage.TenistasStorageJson;
 
+import java.util.Collections;
+
 public class Main {
     // Vamos a probar jdbi en sqlite memoria
 
@@ -51,6 +53,22 @@ public class Main {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        // Obtenemos todos los tenistas
+        var tenistas = tenistasService.getAll(false).blockOptional().map(
+                        result -> result.fold(
+                                left -> {
+                                    System.out.println(left.getMessage());
+                                    return null; // Devuelve una lista vacía en caso de error
+                                },
+                                right -> {
+                                    System.out.println("Tenistas recuperados: " + right.size());
+                                    System.out.println(right);
+                                    return right; // Devuelve la lista de tenistas en caso de éxito
+                                }
+                        )
+                )
+                .orElse(Collections.emptyList()); // En caso de Optional.empty()
 
         /*
         // Vamos a probar el storage CSV

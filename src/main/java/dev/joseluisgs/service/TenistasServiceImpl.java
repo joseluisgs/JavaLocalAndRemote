@@ -47,8 +47,21 @@ public class TenistasServiceImpl implements TenistasService {
     @Override
     public Mono<Either<TenistaError, List<Tenista>>> getAll(boolean fromRemote) {
         logger.debug("Obteniendo todos los tenistas");
-        return null;
+
+        if (!fromRemote) {
+            return localRepository.getAll();
+
+        } else {
+            // remoteRepository.getAll() devuelve un Mono<List<Tenista>>
+            // Luego de obtener los datos remotos, los guardamos en el repositorio local
+            // Y devolvemos los datos locales
+            return remoteRepository.getAll()
+                    .flatMap(remoteTenistas -> localRepository.saveAll(remoteTenistas.get())
+                            .then(localRepository.getAll())
+                            .doOnNext(tenistas -> cache.clear()));
+        }
     }
+
 
     @Override
     public Mono<Either<TenistaError, Tenista>> getById(long id) {
