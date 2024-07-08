@@ -20,6 +20,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.util.Arrays.stream;
+
 @Singleton
 public class TenistasStorageCsv implements TenistasStorage {
     private static final Logger logger = LoggerFactory.getLogger(TenistasStorageCsv.class);
@@ -54,17 +56,18 @@ public class TenistasStorageCsv implements TenistasStorage {
                                     Files.writeString(f.toPath(), "id,nombre,pais,altura,peso,puntos,mano,fecha_nacimiento,createdAt,updatedAt,deletedAt,isDeleted\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                                     // Write data
                                     String dataLines = data.stream()
+                                            .map(TenistaMapper::toTenistaDto)
                                             .map(tenista -> String.join(",",
-                                                    String.valueOf(tenista.getId()),
-                                                    tenista.getNombre(),
-                                                    tenista.getPais(),
-                                                    String.valueOf(tenista.getAltura()),
-                                                    String.valueOf(tenista.getPeso()),
-                                                    String.valueOf(tenista.getPuntos()),
-                                                    tenista.getMano().name(),
-                                                    tenista.getFechaNacimiento().toString(),
-                                                    tenista.getCreatedAt().toString(),
-                                                    tenista.getUpdatedAt().toString(),
+                                                    String.valueOf(tenista.id()),
+                                                    tenista.nombre(),
+                                                    tenista.pais(),
+                                                    String.valueOf(tenista.altura()),
+                                                    String.valueOf(tenista.peso()),
+                                                    String.valueOf(tenista.puntos()),
+                                                    tenista.mano(),
+                                                    tenista.fechaNacimiento(),
+                                                    tenista.createdAt(),
+                                                    tenista.updatedAt(),
                                                     String.valueOf(tenista.isDeleted())))
                                             .collect(Collectors.joining("\n"));
                                     Files.writeString(f.toPath(), dataLines, StandardOpenOption.APPEND);
@@ -92,7 +95,8 @@ public class TenistasStorageCsv implements TenistasStorage {
                 logger.info("Leyendo líneas del fichero: " + file.getAbsolutePath());
                 return Either.right(lines // Files.lines devuelve un Stream<String>
                         .skip(1) // Skip header
-                        .map(line -> line.split(",")) // Split by comma
+                        .map(line -> line.split(",")) // Split each line
+                        .map(fila -> stream(fila).map(String::trim).toArray(String[]::new))
                         .map(this::parseLine) // Parse each line
                         .toList() // Collect to List
                 );
@@ -110,7 +114,7 @@ public class TenistasStorageCsv implements TenistasStorage {
         var dto = new TenistaDto(
                 Long.parseLong(parts[0]),
                 parts[1],
-                parts[2],
+                parts[2].trim(),
                 Integer.parseInt(parts[3]),
                 Integer.parseInt(parts[4]),
                 Integer.parseInt(parts[5]),
@@ -118,7 +122,7 @@ public class TenistasStorageCsv implements TenistasStorage {
                 parts[7],
                 parts.length > 8 ? parts[8] : null,
                 parts.length > 9 ? parts[9] : null,
-                parts.length > 10 && parts[10] != null ? Boolean.parseBoolean(parts[10]) : null
+                parts.length > 10 ? Boolean.parseBoolean(parts[10]) : null
         );
 
         return TenistaMapper.toTenista(dto);
