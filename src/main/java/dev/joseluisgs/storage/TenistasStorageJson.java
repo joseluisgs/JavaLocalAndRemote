@@ -62,7 +62,7 @@ public class TenistasStorageJson implements TenistasStorage {
     public Mono<Either<TenistaError.StorageError, Integer>> exportFile(File file, List<Tenista> data) {
         return Mono.fromCallable(() -> {
                     logger.debug("Exportando Tenistas a JSON asíncrono: {}", file);
-                    return ensureFileCanExists(file).<Either<TenistaError.StorageError, Integer>>fold(
+                    return Utils.ensureFileCanExists(file).<Either<TenistaError.StorageError, Integer>>fold(
                             error -> {
                                 logger.error("Error al exportar Tenistas a JSON: {}", error.getMessage());
                                 return Either.left(error);

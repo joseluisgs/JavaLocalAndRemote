@@ -43,7 +43,7 @@ public class TenistasStorageCsv implements TenistasStorage {
     public Mono<Either<TenistaError.StorageError, Integer>> exportFile(File file, List<Tenista> data) {
         return Mono.fromCallable(() -> {
                     logger.debug("Exportando Tenistas a CSV asíncrono: {}", file);
-                    return ensureFileCanExists(file).<Either<TenistaError.StorageError, Integer>>fold(
+                    return Utils.ensureFileCanExists(file).<Either<TenistaError.StorageError, Integer>>fold(
                             error -> {
                                 logger.error("Error al exportar Tenistas a CSV: {}", error.getMessage());
                                 return Either.left(error);
