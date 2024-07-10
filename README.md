@@ -201,6 +201,12 @@ suscriptores están listos para procesar la notificación, esta se envía inmedi
 suscriptores no están listos o hay un desbordamiento de buffer, el método puede actuar según la política de backpressure
 especificada, en este caso, probablemente descartando eventos antiguos (onBackpressureDrop) cuando el buffer está lleno.
 
+Recuerda que en project reactor un `Flux` es un cold stream, es decir, no se emite nada hasta que alguien se suscribe a
+él
+y
+Y siempre emite los eventos desde el principio. Si necesitas un hot stream, es decir, que emita eventos aunque no haya
+suscriptores, puedes usar un `ConnectableFlux` o un `Sinks.Many.replay()`.
+
 En resumen, esta implementación con Sinks.Many y Flux en Project Reactor permite la creación de un estado compartido
 para las notificaciones, donde se puede enviar múltiples notificaciones y los suscriptores recibirán y procesarán solo
 la última notificación cuando se suscriban, evitando así la acumulación de notificaciones o la pérdida de eventos. El
