@@ -16,14 +16,17 @@ public class TenistasNotifications implements Notifications<TenistaDto> {
 
     /**
      * Clase que utiliza Sinks.Many de Project Reactor para manejar las notificaciones.
-     * Se emplea onBackpressureBuffer para gestionar la sobrecarga de eventos y asegurar
-     * que los eventos adicionales se almacenen temporalmente si los suscriptores no
-     * pueden consumirlos de inmediato.
-     * La emisión y consumo de notificaciones se realizan mediante un Flux.
-     * Es un canal encubierto de flujos frios
+     * Many es una clase que permite emitir eventos a múltiples suscriptores.
+     * Raplay() permite que los nuevos suscriptores reciban los eventos anteriores.
+     * Limit(1) limita el número de eventos almacenados en el buffer a 1. Solo recibimos la última notificación.
      */
 
-    private final Sinks.Many<Notification<TenistaDto>> notificationsSink = Sinks.many().multicast().onBackpressureBuffer();
+    // Sinks.Many es una clase que permite emitir eventos a múltiples suscriptores, l
+    private final Sinks.Many<Notification<TenistaDto>> notificationsSink = Sinks.many().replay().limit(1);
+
+    // El método asFlux() devuelve un Flux que se suscribe a los eventos emitidos por notificationsSink.
+    // Por lo tanto, cualquier notificación emitida por notificationsSink se reenvía a los suscriptores de notifications.
+    // onBackpressureDrop() descarta los eventos si los suscriptores no pueden consumirlos de inmediato.
     @Getter
     private final Flux<Notification<TenistaDto>> notifications = notificationsSink.asFlux().onBackpressureDrop();
 

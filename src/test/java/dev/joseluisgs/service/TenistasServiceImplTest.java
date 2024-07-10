@@ -568,7 +568,13 @@ class TenistasServiceImplTest {
         when(remoteRepository.getAll()).thenReturn(Mono.just(Either.right(List.of(tenistaTest))));
         when(localRepository.saveAll(List.of(tenistaTest))).thenReturn(Mono.just(Either.right(1)));
 
-        service.loadData();
+        // Como no devuelve nada, no se puede hacer un assert, por eso se usa StepVerifier
+        StepVerifier.create(
+                        Mono.fromRunnable(() -> {
+                            service.loadData();
+                        }))
+                .verifyComplete();
+
 
         verify(localRepository, times(1)).removeAll();
         verify(remoteRepository, times(1)).getAll();

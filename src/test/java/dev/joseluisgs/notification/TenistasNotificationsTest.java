@@ -16,7 +16,7 @@ class TenistasNotificationsTest {
 
 
     @Test
-    @DisplayName("Envío de notificación")
+    @DisplayName("Envío de notificación es correcto")
     void enviarNotificacion() {
         var tenistaTest = TenistaMapper.toTenistaDto(Tenista.builder()
                 .id(1L)
@@ -38,5 +38,35 @@ class TenistasNotificationsTest {
                 () -> assertEquals(tenistaTest, result.item(), "Los datos de la notificación deben ser los mismos")
         );
     }
+
+    @Test
+    @DisplayName("Se descarta la primera notificación si hay más de una y no se ha procesado")
+    void obtenerNotificaciones() {
+        var tenistaTest = TenistaMapper.toTenistaDto(Tenista.builder()
+                .id(1L)
+                .nombre("TenistaTest")
+                .pais("Suiza")
+                .altura(185)
+                .peso(85)
+                .puntos(9600)
+                .mano(Tenista.Mano.DIESTRO)
+                .fechaNacimiento(LocalDate.of(1981, 8, 8))
+                .build());
+
+        Notification<TenistaDto> notification1 = new Notification<>(Notification.Type.CREATE, tenistaTest, "test1");
+        Notification<TenistaDto> notification2 = new Notification<>(Notification.Type.UPDATE, tenistaTest, "test2");
+
+        tenistasNotifications.send(notification1);
+        tenistasNotifications.send(notification2);
+
+        var result = tenistasNotifications.getNotifications().blockFirst();
+
+        assertAll("Verificación de notificación",
+                () -> assertEquals(Notification.Type.UPDATE, result.type(), "El tipo de notificación debe ser UPDATE"),
+                () -> assertEquals(tenistaTest, result.item(), "Los datos de la notificación deben ser los mismos"),
+                () -> assertEquals("test2", result.message(), "El mensaje de la notificación debe ser el mismo")
+        );
+    }
+
 
 }

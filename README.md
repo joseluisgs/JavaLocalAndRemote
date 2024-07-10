@@ -181,10 +181,20 @@ pueden ayudar a ello:
   puede emitir cero o más elementos. En este caso, se utiliza Flux para gestionar las notificaciones de forma asíncrona
   y reactiva.
 
-Al utilizar onBackpressureBuffer, se establece una política de bufferización para manejar la sobrecarga de eventos. Esto
-significa que si hay más eventos entrantes de los que los suscriptores pueden consumir en un momento dado, los eventos
-adicionales se almacenan en un buffer en memoria en lugar de descartarlos directamente. Esto garantiza que los eventos
-no se pierdan y se puedan procesar más tarde cuando los suscriptores estén listos para recibirlos.
+Al utilizar `replay()` se crea un Sink que puede publicar valores a múltiples suscriptores, y reenvía (replays) los
+valores emitidos a cualquier nuevo suscriptor.
+En contraste con otros tipos de sinks (`unicast`, `multicast`), un replay sink permite que cualquier nuevo suscriptor
+reciba
+todos los valores anteriores emitidos por el sink.
+
+`limit(1)`: Limita la capacidad de retención de elementos a 1. Esto significa que el sink solo almacenará el último
+elemento emitido, y cualquier nuevo valor que llegue hará que se reemplace el anterior.
+Esta combinación es útil cuando solo quieres que los suscriptores reciban el valor más reciente emitido por el sink.
+
+`asFlux()` devuelve un Flux que se suscribe a los eventos emitidos por el sink. Esto permite que los suscriptores
+reciban y procesen los eventos emitidos por el sink.
+
+`onBackpressureDrop()` descarta los eventos si los suscriptores no pueden consumirlos de inmediato
 
 El método tryEmitNext(notification) se utiliza para intentar enviar una notificación a los suscriptores. Si los
 suscriptores están listos para procesar la notificación, esta se envía inmediatamente. Por otro lado, si los
