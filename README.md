@@ -65,6 +65,25 @@ Con Project Reactor usaremos los conceptos de Flux y Mono:
 
 De esta manera, podemos realizar operaciones asíncronas y reactivas de forma sencilla y eficiente.
 
+En Java podemos hacer uso de CompletableFuture para la asincronía. CompletableFuture es una clase que nos permite
+realizar
+operaciones asíncronas que requieren un resultado y es parte de los Futures de Java.
+
+Project Reactor nos permite trabajar con programación reactiva y asíncrona con dos elementos importantes Mono y Flux.
+Mono nos puede hacer las veces de CompletableFuture y Flux nos permite trabajar con secuencias de valores.
+
+- Usa Project Reactor cuando trabajes con una secuencia de valores que necesitan ser emitidos y procesados con
+  operadores
+  reactivos.
+- Usa CompletableFuture cuando tengas tareas asíncronas discretas que necesiten ejecutarse de manera concurrente y
+  combinadas
+  al
+  final.
+
+En muchas partes de este código nos decantaremos por ProjectReactor para darle un enfoque más reactivo aunque esto
+suponga
+sobrecarga innecesaria. Recuerda que es educativo y es para que tú practiques cosas nuevas.
+
 ## Railway Oriented Programming
 
 El [Railway Oriented Programming](https://fsharpforfunandprofit.com/rop/) (ROP) es un estilo de programación que se basa
