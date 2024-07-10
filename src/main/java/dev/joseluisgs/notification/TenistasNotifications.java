@@ -15,6 +15,15 @@ public class TenistasNotifications implements Notifications<TenistaDto> {
     private static final Logger logger = LoggerFactory.getLogger(TenistasNotifications.class);
 
     /**
+     * Otra forma es Utiliza ReplayProcessor de Project Reactor para manejar las notificaciones.
+     * ReplayProcessor es una clase que permite emitir eventos a múltiples suscriptores.
+     * create(1) limita el número de eventos almacenados en el buffer a 1. Solo recibimos la última notificación.
+     */
+
+    // ReplayProcessor es una clase que permite emitir eventos a múltiples suscriptores
+    // private final ReplayProcessor<Notification<TenistaDto>> notificationsProcessor = ReplayProcessor.create(1);
+
+    /**
      * Clase que utiliza Sinks.Many de Project Reactor para manejar las notificaciones.
      * Many es una clase que permite emitir eventos a múltiples suscriptores.
      * Raplay() permite que los nuevos suscriptores reciban los eventos anteriores.
