@@ -15,8 +15,10 @@ import dev.joseluisgs.validator.TenistaValidator;
 import io.vavr.control.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -24,6 +26,7 @@ import java.io.File;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static reactor.core.scheduler.Schedulers.boundedElastic;
 
@@ -43,6 +46,9 @@ public class TenistasServiceImpl implements TenistasService {
     private final TenistasStorageCsv csvStorage;
     private final TenistasStorageJson jsonStorage;
     private final TenistasNotifications notificationsService;
+    // Para el refresco de datos, Disposable es una interfaz que nos permite cancelar la suscripción
+    // AtomicReference es una clase que nos permite tener una referencia atómica, es decir, que no se puede modificar
+    private final AtomicReference<Disposable> currentSubscription = new AtomicReference<>();
 
     @Inject
     public TenistasServiceImpl(TenistasRepositoryLocal localRepository, TenistasRepositoryRemote remoteRepository, TenistasCache cache, TenistasStorageCsv csvStorage, TenistasStorageJson jsonStorage, TenistasNotifications notificationsService) {
@@ -70,13 +76,12 @@ public class TenistasServiceImpl implements TenistasService {
             // Luego de obtener los datos remotos, los guardamos en el repositorio local
             // Y devolvemos los datos locales
             return remoteRepository.getAll().subscribeOn(boundedElastic())
-                    .then(localRepository.removeAll())
-                    .then(remoteRepository.getAll()
-                            .flatMap(remoteTenistas -> localRepository.saveAll(remoteTenistas.get())))
-                    .then(localRepository.getAll())
-                    .doOnNext(tenistas -> {
-                        cache.clear();
-                    });
+                    .flatMap(remoteTenistas ->
+                            localRepository.removeAll()
+                                    .then(localRepository.saveAll(remoteTenistas.get()))
+                                    .then(localRepository.getAll())
+                                    .doOnNext(tenistas -> cache.clear())
+                    );
         }
     }
 
@@ -317,26 +322,49 @@ public class TenistasServiceImpl implements TenistasService {
     }
 
     @Override
-    public void refresh() {
-        logger.debug("Inicializando TenistasServiceImpl");
-        // Ejecuta loadData inmediatamente y luego a intervalos regulares
-        Flux.concat(
+    public synchronized void enableAutoRefresh() {
+        // Verifica si ya hay una suscripción activa
+        Disposable existingSubscription = currentSubscription.get();
+        if (existingSubscription != null && !existingSubscription.isDisposed()) {
+            logger.debug("Ya hay un trabajo en background de actualización.");
+            return;
+        }
+
+        logger.debug("Inicio de la suscripción para el refresco de de datos");
+        // Crea una nueva suscripción y la almacena
+        Disposable newSubscription = Flux.concat(
                         Mono.fromRunnable(this::loadData), // Ejecuta inmediatamente
                         Flux.interval(Duration.ofMillis(REFRESH_TIME)) // Luego cada REFRESH_TIME
                                 .flatMap(tick -> Mono.fromRunnable(this::loadData))
                                 .onBackpressureDrop() // Opcional, para manejar presión de demanda
                 )
-                .subscribeOn(boundedElastic())
-                // Como son void no necesitamos hacer nada con el resultado me subscribo para que se ejecute
+                .subscribeOn(Schedulers.boundedElastic())
                 .subscribe(
                         next -> logger.debug("Refresco de datos ejecutado"),
-                        error -> logger.error("Error durante el refresco de datos", error)
+                        error -> logger.error("Error durante el refresco de datos", error),
+                        () -> currentSubscription.set(null) // Resetear la suscripción al completar
                 );
+
+        currentSubscription.set(newSubscription);
     }
 
     @Override
+    public synchronized void disableAutoRefresh() {
+        // Verifica si hay una suscripción activa
+        Disposable existingSubscription = currentSubscription.get();
+        if (existingSubscription != null && !existingSubscription.isDisposed()) {
+            logger.debug("Desactivando el trabajo en background de actualización.");
+            existingSubscription.dispose(); // Cancela la suscripción
+            currentSubscription.set(null); // Resetear la suscripción
+        } else {
+            logger.debug("No hay ningún trabajo en background de actualización.");
+        }
+    }
+
+
+    @Override
     public void loadData() {
-        logger.debug("Refrescando el repositorio local con los datos remotos");
+        logger.debug("Cargando el repositorio local con los datos remotos");
         localRepository.removeAll().subscribeOn(boundedElastic())
                 .then(remoteRepository.getAll())
                 .flatMap(remoteTenistas -> localRepository.saveAll(remoteTenistas.get())

@@ -89,7 +89,7 @@ class TenistasServiceImplTest {
         );
 
         verify(localRepository, times(1)).removeAll();
-        verify(remoteRepository, times(2)).getAll();
+        verify(remoteRepository, times(1)).getAll();
         verify(localRepository, times(1)).saveAll(any());
         verify(localRepository, times(1)).getAll();
     }
@@ -583,14 +583,14 @@ class TenistasServiceImplTest {
 
     @Test
     @DisplayName("Refresh debe actualizar los datos")
-    void refresh() {
+    void enableAutoRefresh() {
 
         when(localRepository.removeAll()).thenReturn(Mono.just(Either.right(null)));
         when(remoteRepository.getAll()).thenReturn(Mono.just(Either.right(List.of(tenistaTest))));
         when(localRepository.saveAll(any())).thenReturn(Mono.just(Either.right(1)));
 
         // El método a testear
-        service.refresh();
+        service.enableAutoRefresh();
 
         // Esperar a que se complete la operación asincrónica, por eso se usa StepVerifier
         StepVerifier.create(Mono.fromRunnable(() -> {

@@ -25,7 +25,9 @@ public interface TenistasService {
 
     Mono<Either<TenistaError, Integer>> exportData(File file, boolean fromRemote);
 
-    void refresh();
+    void enableAutoRefresh();
+
+    void disableAutoRefresh();
 
     void loadData();
 }

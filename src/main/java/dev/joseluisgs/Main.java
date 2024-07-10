@@ -49,7 +49,9 @@ public class Main {
             }
         });
 
-        tenistasService.refresh();
+        tenistasService.enableAutoRefresh();
+        tenistasService.enableAutoRefresh();
+        tenistasService.enableAutoRefresh();
 
         // Esperamos un poco
         try {
@@ -226,6 +228,7 @@ public class Main {
         }
 
         System.out.println("🔇 Desactivamos la escucha de notificaciones de tenistas 🔇");
+        tenistasService.disableAutoRefresh();
         notifications.dispose();
 
         // Pruebas de ficheros CSV Import
