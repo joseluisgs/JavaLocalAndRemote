@@ -49,8 +49,7 @@ public class Main {
             }
         });
 
-        tenistasService.enableAutoRefresh();
-        tenistasService.enableAutoRefresh();
+        System.out.println("🔄 Refrescamos los tenistas automáticamente 🔄");
         tenistasService.enableAutoRefresh();
 
         // Esperamos un poco
