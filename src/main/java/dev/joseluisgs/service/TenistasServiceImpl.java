@@ -1,7 +1,9 @@
 package dev.joseluisgs.service;
 
 import dev.joseluisgs.cache.TenistasCache;
+import dev.joseluisgs.dto.TenistaDto;
 import dev.joseluisgs.error.TenistaError;
+import dev.joseluisgs.mapper.TenistaMapper;
 import dev.joseluisgs.models.Tenista;
 import dev.joseluisgs.notification.Notification;
 import dev.joseluisgs.notification.TenistasNotifications;
@@ -52,7 +54,7 @@ public class TenistasServiceImpl implements TenistasService {
         this.notificationsService = notificationsService;
     }
 
-    public Flux<Notification<Tenista>> getNotifications() {
+    public Flux<Notification<TenistaDto>> getNotifications() {
         return notificationsService.getNotifications();
     }
 
@@ -134,8 +136,8 @@ public class TenistasServiceImpl implements TenistasService {
                             cache.put(saved.get().getId(), saved.get());
                             notificationsService.send(new Notification<>(
                                     Notification.Type.CREATE,
-                                    saved.get(),
-                                    "Tenista creado: " + saved.get()));
+                                    TenistaMapper.toTenistaDto(saved.get()),
+                                    "Tenista creado con id: " + saved.get().getId()));
                         });
             }
             return Mono.just(resultRemote); // Devolvemos el resultado
@@ -166,8 +168,8 @@ public class TenistasServiceImpl implements TenistasService {
                                     cache.put(updated.get().getId(), updated.get());
                                     notificationsService.send(new Notification<>(
                                             Notification.Type.UPDATE,
-                                            updated.get(),
-                                            "Tenista actualizado: " + updated.get()));
+                                            TenistaMapper.toTenistaDto(updated.get()),
+                                            "Tenista actualizado con id: " + updated.get().getId()));
                                 });
                     }
                     return Mono.just(resultRemote); // Devolvemos el error que ya viene del getById, si no podemos actualizarlo
@@ -197,8 +199,8 @@ public class TenistasServiceImpl implements TenistasService {
                                             cache.remove(id);
                                             notificationsService.send(new Notification<>(
                                                     Notification.Type.DELETE,
-                                                    result.get(),
-                                                    "Tenista eliminado: " + result.get()));
+                                                    null,
+                                                    "Tenista eliminado con id: " + id));
                                         });
                             }
                             return Mono.just(resultRemote); // Devolvemos el error que ya viene del getById, si no podemos eliminarlo

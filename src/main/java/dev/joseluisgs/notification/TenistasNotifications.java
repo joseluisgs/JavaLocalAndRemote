@@ -1,6 +1,6 @@
 package dev.joseluisgs.notification;
 
-import dev.joseluisgs.models.Tenista;
+import dev.joseluisgs.dto.TenistaDto;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +10,7 @@ import reactor.core.publisher.Sinks;
 import javax.inject.Singleton;
 
 @Singleton
-public class TenistasNotifications implements Notifications<Tenista> {
+public class TenistasNotifications implements Notifications<TenistaDto> {
 
     private static final Logger logger = LoggerFactory.getLogger(TenistasNotifications.class);
 
@@ -20,14 +20,15 @@ public class TenistasNotifications implements Notifications<Tenista> {
      * que los eventos adicionales se almacenen temporalmente si los suscriptores no
      * pueden consumirlos de inmediato.
      * La emisión y consumo de notificaciones se realizan mediante un Flux.
+     * Es un canal encubierto de flujos frios
      */
 
-    private final Sinks.Many<Notification<Tenista>> notificationsSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<Notification<TenistaDto>> notificationsSink = Sinks.many().multicast().onBackpressureBuffer();
     @Getter
-    private final Flux<Notification<Tenista>> notifications = notificationsSink.asFlux().onBackpressureDrop();
+    private final Flux<Notification<TenistaDto>> notifications = notificationsSink.asFlux().onBackpressureDrop();
 
     @Override
-    public void send(Notification<Tenista> notification) {
+    public void send(Notification<TenistaDto> notification) {
         logger.debug("Enviando notificación: {}", notification);
         notificationsSink.tryEmitNext(notification).orThrow();
     }

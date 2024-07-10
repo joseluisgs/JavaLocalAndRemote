@@ -32,7 +32,7 @@ public class TenistasRepositoryLocal implements TenistasRepository {
             logger.debug("Creando tabla si no existe");
             dao.createTable(); // Creamos la tabla si no existe
             logger.debug("Borrando todos los registros");
-            dao.removeAll(); // Borramos todos los registros
+            dao.removeAll(); // Borramos todos los registros porque es local
             return null;
         });
     }

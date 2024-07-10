@@ -44,7 +44,7 @@ public class Main {
                 case UPDATE ->
                         System.out.println("🟠 Notificación de actualización de tenista: " + notification.message() + " -> " + notification.item());
                 case DELETE ->
-                        System.out.println("🔴 Notificación de eliminación de tenista: " + notification.message() + " -> " + notification.item());
+                        System.out.println("🔴 Notificación de eliminación de tenista: " + notification.message());
                 case REFRESH -> System.out.println("🔵 Notificación de refresco de tenistas: " + notification.message());
             }
         });
