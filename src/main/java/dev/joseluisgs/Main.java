@@ -260,21 +260,8 @@ public class Main {
                 )
         );
 
-        // Obtenemos la lista de tenistas
-        var tenistasActuales = tenistasService.getAll(true).blockOptional().map(
-                        result -> result.fold(
-                                left -> {
-                                    System.out.println(left.getMessage());
-                                    return null; // Devuelve una lista vacía en caso de error
-                                },
-                                right -> {
-                                    System.out.println("Tenistas obtenidos: " + right.size());
-                                    System.out.println(right);
-                                    return right; // Devuelve la lista de tenistas en caso de éxito
-                                }
-                        )
-                )
-                .orElse(Collections.emptyList()); // En caso de Optional.empty()
+        // Obtenemos la lista de tenistas, ya sabemos cuales son
+        var tenistasActuales = tenistasService.getAll(true).blockOptional().get().get();
 
         // Tenistas ordenados con ranking, es decir, por puntos de mayor a menor
         System.out.println("Tenistas ordenados por ranking:");
