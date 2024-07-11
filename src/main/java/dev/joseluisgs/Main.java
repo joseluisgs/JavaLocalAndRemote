@@ -118,21 +118,6 @@ public class Main {
                 )
         );
 
-        // Obtenemos todos los tenistas
-        tenistasService.getAll(false).blockOptional().map(
-                result -> result.fold(
-                        left -> {
-                            System.out.println(left.getMessage());
-                            return null; // Devuelve una lista vacía en caso de error
-                        },
-                        right -> {
-                            System.out.println("Tenistas recuperados: " + right.size());
-                            System.out.println(right);
-                            return right; // Devuelve la lista de tenistas en caso de éxito
-                        }
-                )
-        );
-
         // Actualizamos un tenista
         var tenistaUpdate = tenistas.getFirst().nombre("Test Update").id(1L);
         tenistasService.update(1L, tenistaUpdate).subscribeOn(boundedElastic()).blockOptional().ifPresent(
@@ -144,21 +129,6 @@ public class Main {
                         right -> {
                             System.out.println("Tenista actualizado: " + right);
                             return null; // No necesita devolver ningún valor en particular
-                        }
-                )
-        );
-
-        // Obtenemos todos los tenistas
-        tenistasService.getAll(false).blockOptional().map(
-                result -> result.fold(
-                        left -> {
-                            System.out.println(left.getMessage());
-                            return null; // Devuelve una lista vacía en caso de error
-                        },
-                        right -> {
-                            System.out.println("Tenistas recuperados: " + right.size());
-                            System.out.println(right);
-                            return right; // Devuelve la lista de tenistas en caso de éxito
                         }
                 )
         );
@@ -178,7 +148,21 @@ public class Main {
         );
 
         // Eliminamos un tenista
-        tenistasService.delete(1L).subscribeOn(boundedElastic()).blockOptional().ifPresent(
+        tenistasService.delete(2L).subscribeOn(boundedElastic()).blockOptional().ifPresent(
+                result -> result.fold(
+                        left -> {
+                            System.out.println(left.getMessage());
+                            return null; // No necesita devolver ningún valor en particular
+                        },
+                        right -> {
+                            System.out.println("Tenista eliminado: " + right);
+                            return null; // No necesita devolver ningún valor en particular
+                        }
+                )
+        );
+
+        // Eliminamos un tenista que no existe
+        tenistasService.delete(-1L).subscribeOn(boundedElastic()).blockOptional().ifPresent(
                 result -> result.fold(
                         left -> {
                             System.out.println(left.getMessage());
@@ -202,20 +186,6 @@ public class Main {
                             System.out.println("Tenistas recuperados: " + right.size());
                             System.out.println(right);
                             return right; // Devuelve la lista de tenistas en caso de éxito
-                        }
-                )
-        );
-
-        // Eliminamos un tenista que no existe
-        tenistasService.delete(-1L).subscribeOn(boundedElastic()).blockOptional().ifPresent(
-                result -> result.fold(
-                        left -> {
-                            System.out.println(left.getMessage());
-                            return null; // No necesita devolver ningún valor en particular
-                        },
-                        right -> {
-                            System.out.println("Tenista eliminado: " + right);
-                            return null; // No necesita devolver ningún valor en particular
                         }
                 )
         );
