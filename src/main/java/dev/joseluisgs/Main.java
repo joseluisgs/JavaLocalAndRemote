@@ -263,6 +263,8 @@ public class Main {
         // Obtenemos la lista de tenistas, ya sabemos cuales son
         var tenistasActuales = tenistasService.getAll(true).blockOptional().get().get();
 
+        // Comenzamos las operaciones con conlecciones y Streams
+
         // Tenistas ordenados con ranking, es decir, por puntos de mayor a menor
         System.out.println("Tenistas ordenados por ranking:");
         tenistasActuales.stream()
@@ -281,6 +283,10 @@ public class Main {
         // Tenista más alto
         var tenistaMasAlto = tenistasActuales.stream().max(Comparator.comparing(Tenista::getAltura)).orElse(null);
         System.out.printf("Tenista más alto: " + tenistaMasAlto);
+
+        // Tenistas con mas de 5000 puntos
+        var tenistasMasDe5000 = tenistasActuales.stream().filter(t -> t.getPuntos() > 5000).toList();
+        System.out.println("Tenistas con más de 5000 puntos:" + tenistasMasDe5000.size());
 
         // Tenistas españoles
         var tenistasEspanoles = tenistasActuales.stream().filter(t -> t.getPais().equals("España"));
@@ -315,7 +321,7 @@ public class Main {
         // País con puntuación total más alta
         var paisMasPuntos = puntuacionTotalPorPais.entrySet().stream()
                 .max(Comparator.comparingInt(Map.Entry::getValue))
-                .map(e -> e.getKey())
+                .map(Map.Entry::getKey)
                 .orElse("Desconocido");
 
         System.out.printf("País con más puntos: %s -> %d%n", paisMasPuntos, puntuacionTotalPorPais.get(paisMasPuntos));
